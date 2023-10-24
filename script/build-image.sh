@@ -1,0 +1,1 @@
+docker build -t tubes-2-wbd-rest:latest .

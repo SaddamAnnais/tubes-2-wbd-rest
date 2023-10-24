@@ -1,10 +1,9 @@
-# Awesome Project Build with TypeORM
+# tubes-2-wbd-rest
 
 Steps to run this project:
 
-1. Make sure psql is installed
-2. Make a database in psql
-3. Copy .env.example and rename it to .env
-4. Fill the .env with the corresponding value
-5. Run `npm i` command
-6. Run `npm start` command
+1. You did not need to install psql (because we use docker)
+2. Copy .env.example and rename it to .env
+3. Fill the .env with the corresponding value
+4. Run `npm i` command
+5. Run `npm start` command
