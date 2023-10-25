@@ -5,10 +5,6 @@ import { AppDataSource } from "./config/data-source";
 import { UserRoutes } from "./route/user-routes";
 import { User } from "./entity/User";
 import { ServerConfig } from "./config/server-config";
-import * as dotenv from "dotenv";
-
-dotenv.config();
-console.log("test", process.env.POSTGRES_HOST)
 
 AppDataSource.initialize()
   .then(async () => {
