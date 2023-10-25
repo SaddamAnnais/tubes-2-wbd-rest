@@ -10,8 +10,9 @@ services:
       - ./src:/usr/src/app/src
     depends_on:
       - postgresql
+      - redis
     networks:
-      - api-postgresql
+      - api-postgresql-redis
   postgresql:
     image: postgres:latest
     ports:
@@ -24,8 +25,17 @@ services:
     volumes:
       - ./postgresql:/var/lib/postgresql/data
     networks:
-      - api-postgresql
-
+      - api-postgresql-redis
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis:/data
+    depends_on:
+      - postgresql    
+    networks:
+      - api-postgresql-redis
 networks:
-  api-postgresql:
+  api-postgresql-redis:
     driver: bridge

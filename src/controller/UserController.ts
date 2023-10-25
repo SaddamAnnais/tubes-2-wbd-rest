@@ -8,14 +8,19 @@ export class UserController {
   private userRepository = AppDataSource.getRepository(User);
 
   async all(request: Request, response: Response, next: NextFunction) {
-    return this.userRepository.find();
+      // cache: {id: string, milliseconds: 2000}
+      // this will use the custom key and duration provided in the request
+    return this.userRepository.find({ cache: {id: "/users", milliseconds: 120000} });
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
     const id = parseInt(request.params.id);
 
     const user = await this.userRepository.findOne({
-      where: { id },
+      // cache: true
+      // this will use the default duration time defined in data-source
+      // the key will be the sql query made by type orm
+      where: { id }, cache: true,
     });
 
     if (!user) {

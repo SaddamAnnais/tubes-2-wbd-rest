@@ -11,6 +11,16 @@ export const AppDataSource = new DataSource({
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
+  cache: {
+    type: "redis",
+    duration: +process.env.DEFAULT_EXPIRATION_DURATION,
+    options: {
+      socket: {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT,
+      },
+    },
+  },
   synchronize: true,
   logging: false,
   entities: [User],
