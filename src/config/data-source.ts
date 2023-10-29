@@ -2,6 +2,9 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { User } from "../entity/User";
 import * as dotenv from "dotenv";
+import { Recipe } from "../entity/Recipe";
+import { Collection } from "../entity/Collection";
+import { CollectionRecipe } from "../entity/CollectionRecipe";
 
 dotenv.config();
 export const AppDataSource = new DataSource({
@@ -23,5 +26,5 @@ export const AppDataSource = new DataSource({
   },
   synchronize: true,
   logging: false,
-  entities: [User],
+  entities: [User, Recipe, Collection, CollectionRecipe],
 });

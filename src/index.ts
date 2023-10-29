@@ -3,7 +3,7 @@ import * as bodyParser from "body-parser";
 import { Request, Response } from "express";
 import { AppDataSource } from "./config/data-source";
 import { UserRoutes } from "./route/user-routes";
-import { User } from "./entity/User";
+import "reflect-metadata";
 import { ServerConfig } from "./config/server-config";
 
 AppDataSource.initialize()
@@ -39,26 +39,6 @@ AppDataSource.initialize()
 
     // start express server
     app.listen(ServerConfig.port);
-
-    // TO BE DELETED
-    // insert new users for test
-    await AppDataSource.manager.save(
-      AppDataSource.manager.create(User, {
-        firstName: "Timber",
-        lastName: "Saw",
-        age: 27,
-      })
-    );
-
-    await AppDataSource.manager.save(
-      AppDataSource.manager.create(User, {
-        firstName: "Phantom",
-        lastName: "Assassin",
-        age: 24,
-      })
-    );
-    
-    // END OF TO BE DELETED
 
     console.log(
       "Express server has started on port",
