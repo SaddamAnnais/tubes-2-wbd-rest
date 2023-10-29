@@ -9,8 +9,10 @@ services:
     volumes:
       - ./src:/usr/src/app/src
     depends_on:
-      - postgresql
-      - redis
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - api-postgresql-redis
   postgresql:
@@ -24,6 +26,12 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./postgresql:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: always
     networks:
       - api-postgresql-redis
   redis:
@@ -32,8 +40,11 @@ services:
       - 6379:6379
     volumes:
       - ./redis:/data
-    depends_on:
-      - postgresql    
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     networks:
       - api-postgresql-redis
 networks:
