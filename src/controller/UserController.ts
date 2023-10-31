@@ -4,7 +4,9 @@ import { User } from "../entity/User";
 import { RegisterRequest } from "../type/user";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { genSalt, hash } from "bcrypt";
-// import bcrypt from "bcrypt"
+import { AuthToken } from "../type/auth";
+import { JwtAccessConfig } from "../config/jwt-config";
+import jwt from "jsonwebtoken";
 
 export class UserController {
   private userRepository = AppDataSource.getRepository(User);
@@ -69,16 +71,20 @@ export class UserController {
       return;
     }
 
-    // const { id, is_admin } = savedUser;
-    // const payload: AuthToken = {
-    //     userID,
-    //     isAdmin,
-    // };
+    const { id, is_admin } = savedUser;
+    const payload: AuthToken = {
+      id: id,
+      isAdmin: is_admin,
+    };
+
+    const accessToken = jwt.sign(payload, JwtAccessConfig.secret, {
+      expiresIn: JwtAccessConfig.expiresIn,
+    });
+
     res.status(StatusCodes.CREATED).json({
       message: ReasonPhrases.CREATED,
-      // token,
     });
-    // return;
+    res.cookie("token", accessToken, { httpOnly: true });
   }
 
   async all(request: Request, response: Response, next: NextFunction) {
