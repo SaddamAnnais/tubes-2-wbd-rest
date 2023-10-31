@@ -9,6 +9,19 @@ import {
 import { User } from "./User";
 import { CollectionRecipe } from "./CollectionRecipe";
 
+export enum Difficulty {
+  EASY = "easy",
+  MEDIUM = "medium",
+  HARD = "hard",
+}
+
+export enum Tag {
+  APPETIZER = "appetizer",
+  MAIN_COURSE = "main course",
+  DESSERT = "dessert",
+  FULL_COURSE = "full course",
+}
+
 @Entity()
 export class Recipe {
   @PrimaryGeneratedColumn()
@@ -20,11 +33,11 @@ export class Recipe {
   @Column({ type: "text" })
   desc: string;
 
-  @Column()
-  tag: string;
+  @Column({type: "enum", enum: Tag})
+  tag: Tag;
 
-  @Column()
-  difficulty: string;
+  @Column({ type: "enum", enum: Difficulty })
+  difficulty: Difficulty;
 
   @Column()
   video_path: string;
