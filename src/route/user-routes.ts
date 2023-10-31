@@ -10,10 +10,10 @@ import { UserController } from "../controller/UserController";
 
 export const UserRoutes = [
   {
-    method: "get",
-    route: "/users",
+    method: "post",
+    route: "/register",
     controller: UserController,
-    action: "all",
+    action: "register",
   },
   {
     method: "get",
