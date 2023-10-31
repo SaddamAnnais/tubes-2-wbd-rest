@@ -1,2 +1,4 @@
 node_modules/
+postgresql/
+redis/
 script/
