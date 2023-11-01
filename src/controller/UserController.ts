@@ -1,9 +1,9 @@
 import { AppDataSource } from "../config/data-source";
 import { NextFunction, Request, Response } from "express";
 import { User } from "../entity/User";
-import { RegisterRequest } from "../type/user";
+import { LoginRequest, RegisterRequest } from "../type/user";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { genSalt, hash } from "bcrypt";
+import bcrypt from "bcrypt";
 import { AuthToken } from "../type/auth";
 import { JwtAccessConfig } from "../config/jwt-config";
 import jwt from "jsonwebtoken";
@@ -49,8 +49,8 @@ export class UserController {
     }
 
     // hash the password
-    const salt = await genSalt(10);
-    const hashPassword = await hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
 
     // making the user class
     const user = new User();
@@ -71,19 +71,77 @@ export class UserController {
       return;
     }
 
-    const { id, is_admin } = savedUser;
+    // constructing the payload for jwt token
     const payload: AuthToken = {
-      id: id,
-      isAdmin: is_admin,
+      id: savedUser.id,
+      isAdmin: savedUser.is_admin,
     };
 
     const accessToken = jwt.sign(payload, JwtAccessConfig.secret, {
       expiresIn: JwtAccessConfig.expiresIn,
     });
 
+    // set status and message
     res.status(StatusCodes.CREATED).json({
       message: ReasonPhrases.CREATED,
+      token: accessToken, // delete if cookie works
     });
+
+    // set token as cookie
+    res.cookie("token", accessToken, { httpOnly: true });
+  }
+
+  async login(req: Request, res: Response, next: NextFunction) {
+    const { username, password }: LoginRequest = req.body;
+
+    // if input is invalid
+    if (!username || !password) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        message: ReasonPhrases.BAD_REQUEST,
+      });
+      return;
+    }
+
+    // find the user inside database
+    const user = await this.userRepository.findOne({
+      select: { id: true, password_hash: true, is_admin: true },
+      where: { username: username },
+    });
+
+    // if user not found
+    if (!user) {
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        message: ReasonPhrases.UNAUTHORIZED,
+      });
+      return;
+    }
+
+    // if password is incorrect
+    const isCorrect = await bcrypt.compare(password, user.password_hash);
+    if (!isCorrect) {
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        message: ReasonPhrases.UNAUTHORIZED,
+      });
+      return;
+    }
+
+    // constructing the payload for jwt token
+    const payload: AuthToken = {
+      id: user.id,
+      isAdmin: user.is_admin,
+    };
+
+    const accessToken = jwt.sign(payload, JwtAccessConfig.secret, {
+      expiresIn: JwtAccessConfig.expiresIn,
+    });
+
+    // set status and message
+    res.status(StatusCodes.CREATED).json({
+      message: ReasonPhrases.CREATED,
+      token: accessToken, // delete if cookie works
+    });
+
+    // set token as cookie
     res.cookie("token", accessToken, { httpOnly: true });
   }
 
