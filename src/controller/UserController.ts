@@ -12,10 +12,10 @@ export class UserController {
   private userRepository = AppDataSource.getRepository(User);
 
   async register(req: Request, res: Response, next: NextFunction) {
-    const { email, username, name, password }: RegisterRequest = req.body;
+    const { username, name, password }: RegisterRequest = req.body;
 
     // if input is invalid
-    if (!email || !username || !name || !password) {
+    if (!username || !name || !password) {
       res.status(StatusCodes.BAD_REQUEST).json({
         message: ReasonPhrases.BAD_REQUEST,
       });
@@ -35,19 +35,6 @@ export class UserController {
       return;
     }
 
-    // if email already exists
-    const emailExist = await this.userRepository.findOne({
-      select: { email: true },
-      where: { email },
-    });
-
-    if (emailExist) {
-      res.status(StatusCodes.CONFLICT).json({
-        message: "Email already taken",
-      });
-      return;
-    }
-
     // hash the password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
@@ -55,7 +42,6 @@ export class UserController {
     // making the user class
     const user = new User();
     user.username = username;
-    user.email = email;
     user.name = name;
     user.password_hash = hashPassword;
     user.is_admin = false;
@@ -81,14 +67,14 @@ export class UserController {
       expiresIn: JwtAccessConfig.expiresIn,
     });
 
+    // set token as cookie
+    res.cookie("token", accessToken, { httpOnly: true });
+
     // set status and message
     res.status(StatusCodes.CREATED).json({
       message: ReasonPhrases.CREATED,
       token: accessToken, // delete if cookie works
     });
-
-    // set token as cookie
-    res.cookie("token", accessToken, { httpOnly: true });
   }
 
   async login(req: Request, res: Response, next: NextFunction) {
@@ -168,18 +154,6 @@ export class UserController {
       return "unregistered user";
     }
     return user;
-  }
-
-  async save(request: Request, response: Response, next: NextFunction) {
-    const { firstName, lastName, age } = request.body;
-
-    const user = Object.assign(new User(), {
-      firstName,
-      lastName,
-      age,
-    });
-
-    return this.userRepository.save(user);
   }
 
   async remove(request: Request, response: Response, next: NextFunction) {
