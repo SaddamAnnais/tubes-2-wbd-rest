@@ -5,6 +5,8 @@ import {
   CreateDateColumn,
   ManyToOne,
   OneToMany,
+  JoinColumn,
+  RelationId,
 } from "typeorm";
 import { User } from "./User";
 import { CollectionRecipe } from "./CollectionRecipe";
@@ -33,7 +35,7 @@ export class Recipe {
   @Column({ type: "text" })
   desc: string;
 
-  @Column({type: "enum", enum: Tag})
+  @Column({ type: "enum", enum: Tag })
   tag: Tag;
 
   @Column({ type: "enum", enum: Difficulty })
@@ -51,12 +53,17 @@ export class Recipe {
   @CreateDateColumn()
   created_at: Date;
 
-  @ManyToOne((type) => User, (user) => user.recipes, {
+  @ManyToOne((type) => User, (user) => user.id, {
     nullable: false,
     cascade: true,
     onDelete: "CASCADE",
   })
+  @JoinColumn({ name: "user_id" })
   user: User;
+
+  // @RelationId((recipe: Recipe) => recipe.user)
+  @Column()
+  user_id: number;
 
   @OneToMany(
     (type) => CollectionRecipe,

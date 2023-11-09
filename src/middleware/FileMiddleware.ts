@@ -4,7 +4,7 @@ import * as path from "path";
 import { v4 } from "uuid";
 
 export class FileMiddleware {
-  private fileStorage = multer.diskStorage({
+  private static fileStorage = multer.diskStorage({
     destination: (
       req: Request,
       file: Express.Multer.File,
@@ -28,7 +28,7 @@ export class FileMiddleware {
     },
   });
 
-  private fileFilter = (
+  private static fileFilter = (
     req: Request,
     file: Express.Multer.File,
     cb: (error: Error | null, ret: boolean) => void
@@ -56,22 +56,22 @@ export class FileMiddleware {
     }
   };
 
-  private storage = multer({
-    storage: this.fileStorage,
+  private static storage = multer({
+    storage: FileMiddleware.fileStorage,
     limits: {
       fileSize: 41943040, // 40 MB
     },
     fileFilter: this.fileFilter,
   });
 
-  public upload_video_image() {
-    return this.storage.fields([
+  public static upload_video_image() {
+    return FileMiddleware.storage.fields([
       {
-        name: "video",
+        name: "image",
         maxCount: 1,
       },
       {
-        name: "image",
+        name: "video",
         maxCount: 1,
       },
     ]);
