@@ -5,6 +5,8 @@ import { AppDataSource } from "./config/data-source";
 import { UserRoutes } from "./route/user-routes";
 import "reflect-metadata";
 import { ServerConfig } from "./config/server-config";
+import { Route } from "./type/route";
+import { RecipeRoutes } from "./route/recipe-routes";
 
 AppDataSource.initialize()
   .then(async () => {
@@ -14,27 +16,52 @@ AppDataSource.initialize()
 
     // register express routes from defined application routes
     // const Routes = UserRoutes.concat(RecipeRoute, Route2, Route3 ....)
-    const Routes = UserRoutes;
+    const Routes: Route[] = UserRoutes.concat(RecipeRoutes);
+
     Routes.forEach((route) => {
-      (app as any)[route.method](
-        route.route,
-        (req: Request, res: Response, next: Function) => {
-          const result = new (route.controller as any)()[route.action](
-            req,
-            res,
-            next
-          );
-          if (result instanceof Promise) {
-            result.then((result) =>
-              result !== null && result !== undefined
-                ? res.send(result)
-                : undefined
+      if (route.middleware) {
+        (app as any)[route.method](
+          route.route,
+          route.middleware,
+          (req: Request, res: Response, next: Function) => {
+            const result = new (route.controller as any)()[route.action](
+              req,
+              res,
+              next
             );
-          } else if (result !== null && result !== undefined) {
-            res.json(result);
+            console.log(route.middleware);
+            if (result instanceof Promise) {
+              result.then((result) =>
+                result !== null && result !== undefined
+                  ? res.send(result)
+                  : undefined
+              );
+            } else if (result !== null && result !== undefined) {
+              res.json(result);
+            }
           }
-        }
-      );
+        );
+      } else {
+        (app as any)[route.method](
+          route.route,
+          (req: Request, res: Response, next: Function) => {
+            const result = new (route.controller as any)()[route.action](
+              req,
+              res,
+              next
+            );
+            if (result instanceof Promise) {
+              result.then((result) =>
+                result !== null && result !== undefined
+                  ? res.send(result)
+                  : undefined
+              );
+            } else if (result !== null && result !== undefined) {
+              res.json(result);
+            }
+          }
+        );
+      }
     });
 
     // start express server
