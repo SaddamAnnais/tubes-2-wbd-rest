@@ -10,10 +10,59 @@ import * as fs from "fs";
 export class RecipeController {
   private recipeRepository = AppDataSource.getRepository(Recipe);
 
-  async get(req: Request, res: Response) {}
+  async getAll(req: Request, res: Response) {
+    const user_id = res.locals.id;
+    const recipes = await this.recipeRepository.find({
+      where: {
+        user_id: user_id,
+      },
+      // TODO: FILES?
+      relations: {
+        user: true,
+      },
+      //
+    });
+
+    if (!recipes) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      });
+      return;
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ message: ReasonPhrases.OK, data: recipes });
+  }
+
+  async get(req: Request, res: Response) {
+    const user_id = res.locals.id;
+    const id = parseInt(req.params.id);
+    const recipe = await this.recipeRepository.findOneBy({
+      id: id,
+    });
+
+    // TODO: FILES
+
+    if (!recipe) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: ReasonPhrases.NOT_FOUND,
+      });
+      return;
+    }
+
+    if (recipe.user_id !== user_id) {
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        message: ReasonPhrases.UNAUTHORIZED,
+      });
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ message: ReasonPhrases.OK, data: recipe });
+  }
 
   async update(req: Request, res: Response) {
-    console.log("masuk update");
     const id = parseInt(req.params.id);
     const user_id = res.locals.id;
 
@@ -36,7 +85,6 @@ export class RecipeController {
     }
 
     const { title, desc, tag, difficulty }: UpdateRequest = req.body;
-    console.log(title, desc, tag, difficulty);
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     // if input is invalid
@@ -93,7 +141,7 @@ export class RecipeController {
   }
 
   async create(req: Request, res: Response) {
-    console.log("masuk create");
+    console.log("create");
     const { title, desc, tag, difficulty }: CreateRequest = req.body;
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -127,12 +175,10 @@ export class RecipeController {
         path.join(__dirname, "..", "..", "storage", "videos", recipe.video_path)
       )
     );
-    console.log("sini2");
     recipe.user_id = res.locals.id;
 
     // saving into database
     const savedRecipe = await this.recipeRepository.save(recipe);
-    console.log("sini2");
 
     // if failed to save the recipe
     if (!savedRecipe) {
@@ -143,6 +189,49 @@ export class RecipeController {
     }
 
     // response
+    res.status(StatusCodes.OK).json({ message: ReasonPhrases.OK });
+  }
+
+  async delete(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    const user_id = res.locals.id;
+
+    const recipe = await this.recipeRepository.findOneBy({ id: id });
+
+    if (!recipe) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: ReasonPhrases.NOT_FOUND,
+      });
+
+      return;
+    }
+
+    if (recipe.user_id !== user_id) {
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        message: ReasonPhrases.UNAUTHORIZED,
+      });
+
+      return;
+    }
+
+    const deleted = await this.recipeRepository.remove(recipe);
+
+    if (!deleted) {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
+
+      return;
+    }
+
+    fs.unlinkSync(
+      path.join(__dirname, "..", "..", "storage", "images", deleted.image_path)
+    );
+
+    fs.unlinkSync(
+      path.join(__dirname, "..", "..", "storage", "videos", deleted.video_path)
+    );
+
     res.status(StatusCodes.OK).json({ message: ReasonPhrases.OK });
   }
 }
