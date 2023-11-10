@@ -25,4 +25,15 @@ export const RecipeRoutes: Route[] = [
     controller: RecipeController,
     action: "create",
   },
+  {
+    method: "put",
+    route: "/recipe/:id",
+    middleware: [
+      (req: Request, res: Response, next: NextFunction) =>
+        authMiddleware.authenticate(req, res, next),
+      FileMiddleware.upload_video_image(),
+    ],
+    controller: RecipeController,
+    action: "update",
+  },
 ];

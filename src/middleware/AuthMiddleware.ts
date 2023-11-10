@@ -12,13 +12,15 @@ export class AuthMiddleware {
 
     try {
       jwt.verify(token, process.env.SECRET_ACCESS_TOKEN);
-      const payload : AuthToken= JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+      const payload: AuthToken = JSON.parse(
+        Buffer.from(token.split(".")[1], "base64").toString()
+      );
       res.locals.id = payload.id;
       res.locals.isAdmin = payload.isAdmin;
       next();
     } catch (err) {
       res.clearCookie("token");
-      res.redirect("/login");
+      // res.redirect("/login");
     }
   }
 }

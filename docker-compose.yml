@@ -8,6 +8,7 @@ services:
     env_file: .env
     volumes:
       - ./src:/usr/src/app/src
+      - ./storage:/usr/src/app/storage
     depends_on:
       postgresql:
         condition: service_healthy

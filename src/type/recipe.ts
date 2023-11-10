@@ -6,3 +6,10 @@ export interface CreateRequest {
   tag: Tag;
   difficulty: Difficulty;
 }
+
+export interface UpdateRequest {
+  title?: string;
+  desc?: string;
+  tag?: Tag;
+  difficulty?: Difficulty;
+}

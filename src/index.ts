@@ -29,7 +29,7 @@ AppDataSource.initialize()
               res,
               next
             );
-            console.log(route.middleware);
+
             if (result instanceof Promise) {
               result.then((result) =>
                 result !== null && result !== undefined
