@@ -8,6 +8,7 @@ import { ServerConfig } from "./config/server-config";
 import { Route } from "./type/route";
 import { RecipeRoutes } from "./route/recipe-routes";
 import * as path from "path";
+import { CollectionRoutes } from "./route/collection-routes";
 
 AppDataSource.initialize()
   .then(async () => {
@@ -21,7 +22,7 @@ AppDataSource.initialize()
 
     // register express routes from defined application routes
     // const Routes = UserRoutes.concat(RecipeRoute, Route2, Route3 ....)
-    const Routes: Route[] = UserRoutes.concat(RecipeRoutes);
+    const Routes: Route[] = UserRoutes.concat(RecipeRoutes, CollectionRoutes);
 
     Routes.forEach((route) => {
       if (route.middleware) {

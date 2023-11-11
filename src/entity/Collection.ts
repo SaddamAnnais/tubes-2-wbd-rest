@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   OneToMany,
+  JoinColumn,
 } from "typeorm";
 import { User } from "./User";
 import { CollectionRecipe } from "./CollectionRecipe";
@@ -20,18 +21,22 @@ export class Collection {
   @CreateDateColumn()
   created_at: Date;
 
-  @Column()
+  @Column({ type: String, nullable: true })
   cover: string;
 
-  @Column({ type: "int" })
+  @Column({ type: "int", default: 0 })
   total_recipe: number;
 
-  @ManyToOne((type) => User, (user) => user.collections, {
+  @ManyToOne((type) => User, (user) => user.id, {
     nullable: false,
     cascade: true,
-    onDelete: "CASCADE"
+    onDelete: "CASCADE",
   })
+  @JoinColumn({ name: "user_id" })
   user: User;
+
+  @Column()
+  user_id: number;
 
   @OneToMany(
     (type) => CollectionRecipe,

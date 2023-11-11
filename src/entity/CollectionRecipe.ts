@@ -10,18 +10,17 @@ export class CollectionRecipe {
   @PrimaryColumn()
   collectionId: number;
 
-  @ManyToOne((type) => Recipe, (recipe) => recipe.collectionRecipe, {
+  @ManyToOne((type) => Recipe, (recipe) => recipe.id, {
     cascade: true,
     onDelete: "CASCADE",
   })
   @JoinColumn({ name: "recipeId" })
   recipe: Recipe;
 
-  @ManyToOne(
-    (type) => Collection,
-    (collection) => collection.collectionRecipe,
-    { cascade: true, onDelete: "CASCADE" }
-  )
+  @ManyToOne((type) => Collection, (collection) => collection.id, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
   @JoinColumn({ name: "collectionId" })
   collection: Collection;
 }
