@@ -142,6 +142,14 @@ export class UserController {
   async one(request: Request, response: Response, next: NextFunction) {
     const id = parseInt(request.params.id);
 
+    if (!id || isNaN(id)) {
+      response.status(StatusCodes.BAD_REQUEST).json({
+        message: ReasonPhrases.BAD_REQUEST,
+      });
+
+      return;
+    }
+
     const user = await this.userRepository.findOne({
       // cache: true
       // this will use the default duration time defined in data-source
@@ -158,6 +166,13 @@ export class UserController {
 
   async remove(request: Request, response: Response, next: NextFunction) {
     const id = parseInt(request.params.id);
+    if (!id || isNaN(id)) {
+      response.status(StatusCodes.BAD_REQUEST).json({
+        message: ReasonPhrases.BAD_REQUEST,
+      });
+
+      return;
+    }
 
     let userToRemove = await this.userRepository.findOneBy({ id });
 

@@ -43,6 +43,15 @@ export class RecipeController {
   async getDetails(req: Request, res: Response) {
     const user_id = res.locals.id;
     const id = parseInt(req.params.id);
+
+    if (!id || isNaN(id)) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        message: ReasonPhrases.BAD_REQUEST,
+      });
+
+      return;
+    }
+
     const recipe = await this.recipeRepository.findOne({
       select: {
         video_path: false, // serve image as static file (publicly available)
@@ -78,6 +87,14 @@ export class RecipeController {
   async getVideo(req: Request, res: Response) {
     const user_id = res.locals.id;
     const id = parseInt(req.params.id);
+    if (!id || isNaN(id)) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        message: ReasonPhrases.BAD_REQUEST,
+      });
+
+      return;
+    }
+
     const recipe = await this.recipeRepository.findOneBy({
       id: id,
     });
@@ -103,6 +120,14 @@ export class RecipeController {
   async update(req: Request, res: Response) {
     const id = parseInt(req.params.id);
     const user_id = res.locals.id;
+
+    if (!id || isNaN(id)) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        message: ReasonPhrases.BAD_REQUEST,
+      });
+
+      return;
+    }
 
     const recipe = await this.recipeRepository.findOneBy({ id: id });
 
@@ -207,7 +232,7 @@ export class RecipeController {
   }
 
   async create(req: Request, res: Response) {
-    const { title, desc, tag, difficulty }: CreateRequest = req.body;
+    const { title, desc, tag, difficulty } = req.body as CreateRequest;
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     // if input is invalid
@@ -225,7 +250,6 @@ export class RecipeController {
       return;
     }
 
-    // making the user class
     const recipe = new Recipe();
     recipe.title = title;
     recipe.desc = desc;
@@ -281,6 +305,14 @@ export class RecipeController {
   async delete(req: Request, res: Response) {
     const id = parseInt(req.params.id);
     const user_id = res.locals.id;
+
+    if (!id || isNaN(id)) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        message: ReasonPhrases.BAD_REQUEST,
+      });
+
+      return;
+    }
 
     const recipe = await this.recipeRepository.findOneBy({ id: id });
 
