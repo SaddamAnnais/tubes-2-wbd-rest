@@ -19,9 +19,9 @@ export class RecipeController {
       where: {
         user_id: user_id,
       },
-      relations: {
-        user: true,
-      },
+      // relations: {
+      //   user: true,
+      // },
     });
 
     if (!recipes) {
@@ -50,9 +50,9 @@ export class RecipeController {
       where: {
         id: id,
       },
-      relations: {
-        user: true,
-      },
+      // relations: {
+      //   user: true,
+      // },
     });
 
     if (!recipe) {
