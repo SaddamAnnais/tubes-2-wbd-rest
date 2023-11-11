@@ -121,14 +121,14 @@ export class UserController {
       expiresIn: JwtAccessConfig.expiresIn,
     });
 
+    // set token as cookie
+    res.cookie("token", accessToken, { httpOnly: true });
+
     // set status and message
     res.status(StatusCodes.CREATED).json({
       message: ReasonPhrases.CREATED,
       token: accessToken, // delete if cookie works
     });
-
-    // set token as cookie
-    res.cookie("token", accessToken, { httpOnly: true });
   }
 
   async all(request: Request, response: Response, next: NextFunction) {

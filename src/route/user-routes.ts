@@ -34,4 +34,10 @@ export const UserRoutes: Route[] = [
     controller: UserController,
     action: "remove",
   },
+  {
+    method: "post",
+    route: "/login",
+    controller: UserController,
+    action: "login",
+  },
 ];
