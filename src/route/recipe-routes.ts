@@ -52,12 +52,22 @@ export const RecipeRoutes: Route[] = [
   },
   {
     method: "get",
-    route: "/recipe/:id",
+    route: "/recipe/video/:id",
     middleware: [
       (req: Request, res: Response, next: NextFunction) =>
         authMiddleware.authenticate(req, res, next),
     ],
     controller: RecipeController,
-    action: "get",
+    action: "getVideo",
+  },
+  {
+    method: "get",
+    route: "/recipe/details/:id",
+    middleware: [
+      (req: Request, res: Response, next: NextFunction) =>
+        authMiddleware.authenticate(req, res, next),
+    ],
+    controller: RecipeController,
+    action: "getDetails",
   },
 ];

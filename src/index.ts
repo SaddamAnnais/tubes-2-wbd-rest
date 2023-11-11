@@ -7,12 +7,17 @@ import "reflect-metadata";
 import { ServerConfig } from "./config/server-config";
 import { Route } from "./type/route";
 import { RecipeRoutes } from "./route/recipe-routes";
+import * as path from "path";
 
 AppDataSource.initialize()
   .then(async () => {
     // create express app
     const app = express();
     app.use(bodyParser.json());
+    app.use(
+      "/public",
+      express.static(path.join(__dirname, "..", "storage", "images"))
+    );
 
     // register express routes from defined application routes
     // const Routes = UserRoutes.concat(RecipeRoute, Route2, Route3 ....)
@@ -70,7 +75,7 @@ AppDataSource.initialize()
     console.log(
       "Express server has started on port",
       ServerConfig.port,
-      "Open http://localhost:" + ServerConfig.port + "/users to see results"
+      "Open http://localhost:" + ServerConfig.port + " to see results"
     );
   })
   .catch((error) => console.log(error));

@@ -13,14 +13,15 @@ export class RecipeController {
   async getAll(req: Request, res: Response) {
     const user_id = res.locals.id;
     const recipes = await this.recipeRepository.find({
+      select: {
+        video_path: false, // serve image as static file (publicly available)
+      },
       where: {
         user_id: user_id,
       },
-      // TODO: FILES?
       relations: {
         user: true,
       },
-      //
     });
 
     if (!recipes) {
@@ -30,19 +31,29 @@ export class RecipeController {
       return;
     }
 
+    for (let recipe of recipes) {
+      recipe.image_path = `${process.env.REST_URL}/public/${recipe.image_path}`;
+    }
+
     res
       .status(StatusCodes.OK)
       .json({ message: ReasonPhrases.OK, data: recipes });
   }
 
-  async get(req: Request, res: Response) {
+  async getDetails(req: Request, res: Response) {
     const user_id = res.locals.id;
     const id = parseInt(req.params.id);
-    const recipe = await this.recipeRepository.findOneBy({
-      id: id,
+    const recipe = await this.recipeRepository.findOne({
+      select: {
+        video_path: false, // serve image as static file (publicly available)
+      },
+      where: {
+        id: id,
+      },
+      relations: {
+        user: true,
+      },
     });
-
-    // TODO: FILES
 
     if (!recipe) {
       res.status(StatusCodes.NOT_FOUND).json({
@@ -57,9 +68,36 @@ export class RecipeController {
       });
     }
 
+    recipe.image_path = `${process.env.REST_URL}/public/${recipe.image_path}`;
+
     res
       .status(StatusCodes.OK)
       .json({ message: ReasonPhrases.OK, data: recipe });
+  }
+
+  async getVideo(req: Request, res: Response) {
+    const user_id = res.locals.id;
+    const id = parseInt(req.params.id);
+    const recipe = await this.recipeRepository.findOneBy({
+      id: id,
+    });
+
+    if (!recipe) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: ReasonPhrases.NOT_FOUND,
+      });
+      return;
+    }
+
+    if (recipe.user_id !== user_id) {
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        message: ReasonPhrases.UNAUTHORIZED,
+      });
+    }
+
+    res.sendFile(
+      path.join(__dirname, "..", "..", "storage", "videos", recipe.video_path)
+    );
   }
 
   async update(req: Request, res: Response) {
@@ -134,6 +172,34 @@ export class RecipeController {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: ReasonPhrases.INTERNAL_SERVER_ERROR,
       });
+
+      if (files?.image?.[0]?.filename) {
+        fs.unlinkSync(
+          path.join(
+            __dirname,
+            "..",
+            "..",
+            "storage",
+            "images",
+            recipe.image_path
+          )
+        );
+      }
+
+      if (files?.video?.[0]?.filename) {
+        fs.unlinkSync(
+          path.join(
+            __dirname,
+            "..",
+            "..",
+            "storage",
+            "videos",
+            recipe.video_path
+          )
+        );
+        recipe.video_path = files.video[0].filename;
+      }
+
       return;
     }
 
@@ -141,7 +207,6 @@ export class RecipeController {
   }
 
   async create(req: Request, res: Response) {
-    console.log("create");
     const { title, desc, tag, difficulty }: CreateRequest = req.body;
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -169,7 +234,6 @@ export class RecipeController {
 
     recipe.video_path = files.video[0].filename;
     recipe.image_path = files.image[0].filename;
-    console.log("sini");
     recipe.duration = Math.floor(
       await getVideoDurationInSeconds(
         path.join(__dirname, "..", "..", "storage", "videos", recipe.video_path)
@@ -185,6 +249,28 @@ export class RecipeController {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: ReasonPhrases.INTERNAL_SERVER_ERROR,
       });
+
+      fs.unlinkSync(
+        path.join(
+          __dirname,
+          "..",
+          "..",
+          "storage",
+          "images",
+          files.image[0].filename
+        )
+      );
+
+      fs.unlinkSync(
+        path.join(
+          __dirname,
+          "..",
+          "..",
+          "storage",
+          "videos",
+          files.video[0].filename
+        )
+      );
       return;
     }
 
