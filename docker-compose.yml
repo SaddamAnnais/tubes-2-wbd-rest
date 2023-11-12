@@ -1,26 +1,29 @@
 version: "3.0"
 services:
-  api:
+  cooklyst-rest-api:
     image: tubes-2-wbd-rest:latest
     ports:
       - 3000:3000
-    hostname: rest-api-service
+    hostname: cooklyst-rest-api
     env_file: .env
     volumes:
       - ./src:/usr/src/app/src
       - ./storage:/usr/src/app/storage
     depends_on:
-      postgresql:
+      cooklyst-rest-db:
         condition: service_healthy
-      redis:
+      cooklyst-rest-cache:
         condition: service_healthy
+
+    # COMMENT THIS IF YOU USE DOCKER CONFIG TO START ALL CONTAINERS
     networks:
       - api-postgresql-redis
-  postgresql:
+
+  cooklyst-rest-db:
     image: postgres:latest
     ports:
       - 5433:5432
-    hostname: db-rest-api-service
+    hostname: cooklyst-rest-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -33,9 +36,12 @@ services:
       timeout: 3s
       retries: 5
     restart: always
+
+    # COMMENT THIS IF YOU USE DOCKER CONFIG TO START ALL CONTAINERS
     networks:
       - api-postgresql-redis
-  redis:
+
+  cooklyst-rest-cache:
     image: redis:latest
     ports:
       - 6379:6379
@@ -46,8 +52,12 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
+    # COMMENT THIS IF YOU USE DOCKER CONFIG TO START ALL CONTAINERS
     networks:
       - api-postgresql-redis
+
+# COMMENT THIS IF YOU USE DOCKER CONFIG TO START ALL CONTAINERS
 networks:
   api-postgresql-redis:
     driver: bridge
