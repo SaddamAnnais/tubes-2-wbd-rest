@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import { AuthToken } from "../type/auth";
 import { JwtAccessConfig } from "../config/jwt-config";
 import jwt from "jsonwebtoken";
+import { createResponse } from "../util/create-response";
 
 export class UserController {
   private userRepository = AppDataSource.getRepository(User);
@@ -16,9 +17,11 @@ export class UserController {
 
     // if input is invalid
     if (!username || !name || !password) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
+      createResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "Field username, name, and password cannot be empty."
+      );
       return;
     }
 
@@ -29,9 +32,7 @@ export class UserController {
     });
 
     if (usernameExist) {
-      res.status(StatusCodes.CONFLICT).json({
-        message: "Username already taken",
-      });
+      createResponse(res, StatusCodes.CONFLICT, "Username already taken.");
       return;
     }
 
@@ -51,9 +52,11 @@ export class UserController {
 
     // if failed to save the user
     if (!savedUser) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-      });
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
       return;
     }
 
@@ -71,9 +74,8 @@ export class UserController {
     res.cookie("token", accessToken, { httpOnly: true });
 
     // set status and message
-    res.status(StatusCodes.CREATED).json({
-      message: ReasonPhrases.CREATED,
-      token: accessToken, // delete if cookie works
+    createResponse(res, StatusCodes.CREATED, ReasonPhrases.CREATED, {
+      token: accessToken,
     });
   }
 
@@ -82,9 +84,11 @@ export class UserController {
 
     // if input is invalid
     if (!username || !password) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
+      createResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "Field username and password cannot be empty."
+      );
       return;
     }
 
@@ -96,18 +100,14 @@ export class UserController {
 
     // if user not found
     if (!user) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
+      createResponse(res, StatusCodes.UNAUTHORIZED, "Username not found.");
       return;
     }
 
     // if password is incorrect
     const isCorrect = await bcrypt.compare(password, user.password_hash);
     if (!isCorrect) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
+      createResponse(res, StatusCodes.UNAUTHORIZED, "Invalid credentials.");
       return;
     }
 
@@ -125,28 +125,35 @@ export class UserController {
     res.cookie("token", accessToken, { httpOnly: true });
 
     // set status and message
-    res.status(StatusCodes.CREATED).json({
-      message: ReasonPhrases.CREATED,
-      token: accessToken, // delete if cookie works
+    createResponse(res, StatusCodes.CREATED, ReasonPhrases.CREATED, {
+      token: accessToken,
     });
   }
 
   async all(request: Request, response: Response, next: NextFunction) {
     // cache: {id: string, milliseconds: 2000}
     // this will use the custom key and duration provided in the request
-    return this.userRepository.find({
+    const users = this.userRepository.find({
       cache: { id: "/users", milliseconds: 120000 },
     });
+
+    if (!users) {
+      createResponse(
+        response,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
+      return;
+    }
+
+    createResponse(response, StatusCodes.CREATED, ReasonPhrases.CREATED, users);
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
     const id = parseInt(request.params.id);
 
     if (!id || isNaN(id)) {
-      response.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
-
+      createResponse(response, StatusCodes.BAD_REQUEST, "Invalid id.");
       return;
     }
 
@@ -159,29 +166,37 @@ export class UserController {
     });
 
     if (!user) {
-      return "unregistered user";
+      createResponse(response, StatusCodes.NOT_FOUND, "User not found.");
+      return;
     }
-    return user;
+
+    createResponse(response, StatusCodes.OK, ReasonPhrases.OK, user);
   }
 
   async remove(request: Request, response: Response, next: NextFunction) {
     const id = parseInt(request.params.id);
     if (!id || isNaN(id)) {
-      response.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
-
+      createResponse(response, StatusCodes.BAD_REQUEST, "Invalid id.");
       return;
     }
 
     let userToRemove = await this.userRepository.findOneBy({ id });
 
     if (!userToRemove) {
-      return "this user not exist";
+      createResponse(response, StatusCodes.NOT_FOUND, "User not found.");
+      return;
     }
 
-    await this.userRepository.remove(userToRemove);
+    const deleted = await this.userRepository.remove(userToRemove);
+    if (!deleted) {
+      createResponse(
+        response,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
+      return;
+    }
 
-    return "user has been removed";
+    createResponse(response, StatusCodes.OK, "User has been removed.");
   }
 }
