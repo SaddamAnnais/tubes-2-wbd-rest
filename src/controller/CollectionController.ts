@@ -11,6 +11,29 @@ export class CollectionController {
   private colleRecipeRepo = AppDataSource.getRepository(CollectionRecipe);
   private recipeRepo = AppDataSource.getRepository(Recipe);
 
+  async getAll(req: Request, res: Response) {
+    const user_id = res.locals.id;
+    const collections = await this.colleRepo.find({
+      select: {
+        cover: false, // nanti
+      },
+      where: {
+        user_id: user_id,
+      }
+    });
+
+    if (!collections) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      });
+      return;
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ message: ReasonPhrases.OK, data: collections });
+  }
+
   async create(req: Request, res: Response) {
     const userId = res.locals.id;
     const { title } = req.body as CreateRequest;
