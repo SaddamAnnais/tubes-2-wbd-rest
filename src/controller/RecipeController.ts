@@ -6,6 +6,7 @@ import { CreateRequest, UpdateRequest } from "../type/recipe";
 import getVideoDurationInSeconds from "get-video-duration";
 import * as path from "path";
 import * as fs from "fs";
+import { createResponse } from "../util/create-response";
 
 export class RecipeController {
   private recipeRepository = AppDataSource.getRepository(Recipe);
@@ -25,9 +26,11 @@ export class RecipeController {
     });
 
     if (!recipes) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-      });
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
       return;
     }
 
@@ -35,9 +38,8 @@ export class RecipeController {
       recipe.image_path = `${process.env.REST_URL}/public/${recipe.image_path}`;
     }
 
-    res
-      .status(StatusCodes.OK)
-      .json({ message: ReasonPhrases.OK, data: recipes });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipes);
+    return;
   }
 
   async getDetails(req: Request, res: Response) {
@@ -45,10 +47,7 @@ export class RecipeController {
     const id = parseInt(req.params.id);
 
     if (!id || isNaN(id)) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
-
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id.");
       return;
     }
 
@@ -65,33 +64,26 @@ export class RecipeController {
     });
 
     if (!recipe) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
-      });
+      createResponse(res, StatusCodes.NOT_FOUND, "Recipe not found.");
       return;
     }
 
     if (recipe.user_id !== user_id) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      return;
     }
 
     recipe.image_path = `${process.env.REST_URL}/public/${recipe.image_path}`;
 
-    res
-      .status(StatusCodes.OK)
-      .json({ message: ReasonPhrases.OK, data: recipe });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipe);
   }
 
   async getVideo(req: Request, res: Response) {
     const user_id = res.locals.id;
     const id = parseInt(req.params.id);
-    if (!id || isNaN(id)) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
 
+    if (!id || isNaN(id)) {
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id.");
       return;
     }
 
@@ -100,16 +92,13 @@ export class RecipeController {
     });
 
     if (!recipe) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
-      });
+      createResponse(res, StatusCodes.NOT_FOUND, "Recipe not found.");
       return;
     }
 
     if (recipe.user_id !== user_id) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      return;
     }
 
     res.sendFile(
@@ -122,28 +111,19 @@ export class RecipeController {
     const user_id = res.locals.id;
 
     if (!id || isNaN(id)) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
-
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id.");
       return;
     }
 
     const recipe = await this.recipeRepository.findOneBy({ id: id });
 
     if (!recipe) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
-      });
-
+      createResponse(res, StatusCodes.NOT_FOUND, "Recipe not found.");
       return;
     }
 
     if (recipe.user_id !== user_id) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
-
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
 
@@ -152,9 +132,11 @@ export class RecipeController {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     // if input is invalid
     if (!title || !desc || !tag || !difficulty) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
+      createResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "Field title, desc, tag, and difficulty cannot be empty."
+      );
       return;
     }
 
@@ -194,10 +176,6 @@ export class RecipeController {
     const savedRecipe = await this.recipeRepository.save(recipe);
 
     if (!savedRecipe) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-      });
-
       if (files?.image?.[0]?.filename) {
         fs.unlinkSync(
           path.join(
@@ -225,10 +203,15 @@ export class RecipeController {
         recipe.video_path = files.video[0].filename;
       }
 
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
       return;
     }
 
-    res.status(StatusCodes.OK).json({ message: ReasonPhrases.OK });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
 
   async create(req: Request, res: Response) {
@@ -244,9 +227,11 @@ export class RecipeController {
       !files?.video?.[0]?.filename ||
       !files?.image?.[0]?.filename
     ) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
+      createResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "Field title, desc, tag, difficulty, video, and image cannot be empty."
+      );
       return;
     }
 
@@ -270,10 +255,6 @@ export class RecipeController {
 
     // if failed to save the recipe
     if (!savedRecipe) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-      });
-
       fs.unlinkSync(
         path.join(
           __dirname,
@@ -295,11 +276,17 @@ export class RecipeController {
           files.video[0].filename
         )
       );
+
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
       return;
     }
 
     // response
-    res.status(StatusCodes.OK).json({ message: ReasonPhrases.OK });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
 
   async delete(req: Request, res: Response) {
@@ -307,38 +294,30 @@ export class RecipeController {
     const user_id = res.locals.id;
 
     if (!id || isNaN(id)) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
-
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id.");
       return;
     }
 
     const recipe = await this.recipeRepository.findOneBy({ id: id });
 
     if (!recipe) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
-      });
-
+      createResponse(res, StatusCodes.NOT_FOUND, "Recipe not found.");
       return;
     }
 
     if (recipe.user_id !== user_id) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
-
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
 
     const deleted = await this.recipeRepository.remove(recipe);
 
     if (!deleted) {
-      res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
-
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
       return;
     }
 
@@ -350,6 +329,6 @@ export class RecipeController {
       path.join(__dirname, "..", "..", "storage", "videos", deleted.video_path)
     );
 
-    res.status(StatusCodes.OK).json({ message: ReasonPhrases.OK });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
 }

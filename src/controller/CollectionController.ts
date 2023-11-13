@@ -2,9 +2,14 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../config/data-source";
 import { Collection } from "../entity/Collection";
 import { CollectionRecipe } from "../entity/CollectionRecipe";
-import { CreateRequest, UpdateRequest, AddRecipeRequest } from "../type/collection";
+import {
+  CreateRequest,
+  UpdateRequest,
+  AddRecipeRequest,
+} from "../type/collection";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { Recipe } from "../entity/Recipe";
+import { createResponse } from "../util/create-response";
 
 export class CollectionController {
   private colleRepo = AppDataSource.getRepository(Collection);
@@ -19,19 +24,19 @@ export class CollectionController {
       },
       where: {
         user_id: user_id,
-      }
+      },
     });
 
     if (!collections) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-      });
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
       return;
     }
 
-    res
-      .status(StatusCodes.OK)
-      .json({ message: ReasonPhrases.OK, data: collections });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collections);
   }
 
   async create(req: Request, res: Response) {
@@ -52,19 +57,21 @@ export class CollectionController {
     const savedCollection = await this.colleRepo.save(collection);
 
     if (!savedCollection) {
-      res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
       return;
     }
 
-    res.status(StatusCodes.OK).json({ message: ReasonPhrases.OK });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
 
   async delete(req: Request, res: Response) {
     const id = parseInt(req.params.id);
     const userId = res.locals.id;
-    
+
     if (!id || isNaN(id)) {
       res.status(StatusCodes.BAD_REQUEST).json({
         message: ReasonPhrases.BAD_REQUEST,
@@ -86,10 +93,7 @@ export class CollectionController {
 
     // validate owner
     if (collection.user_id !== userId) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
-
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
 
@@ -97,14 +101,15 @@ export class CollectionController {
     const deleted = await this.colleRepo.remove(collection);
 
     if (!deleted) {
-      res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
-
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
       return;
     }
 
-    res.status(StatusCodes.OK).json({ message: ReasonPhrases.OK });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
 
   async update(req: Request, res: Response) {
@@ -132,13 +137,9 @@ export class CollectionController {
 
     // validate owner
     if (collection.user_id !== userId) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
-
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
-
 
     const { title }: UpdateRequest = req.body;
 
@@ -152,17 +153,19 @@ export class CollectionController {
 
     collection.title = title;
 
-
     // update collection
     const savedCollection = await this.colleRepo.save(collection);
 
     if (!savedCollection) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-      });
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
+      return;
     }
 
-    res.status(StatusCodes.OK).json({ message: ReasonPhrases.OK });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
 
   async addRecipe(req: Request, res: Response) {
@@ -188,10 +191,7 @@ export class CollectionController {
     }
 
     if (collection.user_id !== userId) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
-
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
 
@@ -206,10 +206,7 @@ export class CollectionController {
     }
 
     if (recipe.user_id !== userId) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
-
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
 
@@ -220,13 +217,15 @@ export class CollectionController {
     const addedRecipe = await this.colleRecipeRepo.save(colleRecipe);
 
     if (!addedRecipe) {
-      res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
       return;
     }
 
-    res.status(StatusCodes.OK).json({ message: ReasonPhrases.OK });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
 
   async removeRecipe(req: Request, res: Response) {
@@ -254,10 +253,7 @@ export class CollectionController {
 
     // validate owner
     if (collection.user_id !== userId) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
-
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
 
@@ -274,18 +270,14 @@ export class CollectionController {
 
     // validate recipe owner
     if (recipe.user_id !== userId) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: ReasonPhrases.UNAUTHORIZED,
-      });
-
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
 
     const colleRecipeToRemove = await this.colleRecipeRepo.findOneBy({
       recipeId: recipe_id,
-      collectionId: collecId
+      collectionId: collecId,
     });
-
 
     // validate colleRecipe
     if (!colleRecipeToRemove) {
@@ -298,13 +290,14 @@ export class CollectionController {
     const deleted = await this.recipeRepo.remove(colleRecipeToRemove);
 
     if (!deleted) {
-      res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
-
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
       return;
     }
 
-    res.status(StatusCodes.OK).json({ message: ReasonPhrases.OK });
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
 }
