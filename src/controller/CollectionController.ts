@@ -19,9 +19,6 @@ export class CollectionController {
   async getAll(req: Request, res: Response) {
     const user_id = res.locals.id;
     const collections = await this.colleRepo.find({
-      select: {
-        cover: false, // nanti
-      },
       where: {
         user_id: user_id,
       },
@@ -36,7 +33,81 @@ export class CollectionController {
       return;
     }
 
+    // TODO: APPEND STATIC, APPEND DEFAULT
+
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collections);
+  }
+
+  async get(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    const userId = res.locals.id;
+
+    if (!id || isNaN(id)) {
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
+      return;
+    }
+
+    const collection = await this.colleRepo.findOneBy({ id: id });
+
+    // validate collection
+    if (!collection) {
+      createResponse(res, StatusCodes.NOT_FOUND, "Collection not found.");
+      return;
+    }
+
+    // validate owner
+    if (collection.user_id !== userId) {
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      return;
+    }
+
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collection);
+  }
+
+  async getRecipes(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    const userId = res.locals.id;
+
+    if (!id || isNaN(id)) {
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
+      return;
+    }
+
+    const collection = await this.colleRepo.findOneBy({ id: id });
+
+    // validate collection
+    if (!collection) {
+      createResponse(res, StatusCodes.NOT_FOUND, "Collection not found.");
+      return;
+    }
+
+    // validate owner
+    if (collection.user_id !== userId) {
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      return;
+    }
+
+    const recipes = await this.colleRecipeRepo.find({
+      where: { collectionId: id },
+      relations: {
+        recipe: true,
+      },
+    });
+
+    if (!recipes) {
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
+      return;
+    }
+
+    for (let recipe of recipes) {
+      recipe.recipe.image_path = `${process.env.REST_URL}/public/${recipe.recipe.image_path}`;
+    }
+
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipes);
   }
 
   async create(req: Request, res: Response) {
@@ -217,6 +288,9 @@ export class CollectionController {
       return;
     }
 
+    collection.total_recipe += 1;
+    await this.colleRepo.save(collection);
+
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
 
@@ -287,6 +361,9 @@ export class CollectionController {
       );
       return;
     }
+
+    collection.total_recipe -= 1;
+    await this.colleRepo.save(collection);
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
