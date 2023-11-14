@@ -129,26 +129,7 @@ export class UserController {
       token: accessToken,
     });
   }
-
-  async all(request: Request, response: Response, next: NextFunction) {
-    // cache: {id: string, milliseconds: 2000}
-    // this will use the custom key and duration provided in the request
-    const users = this.userRepository.find({
-      cache: { id: "/users", milliseconds: 120000 },
-    });
-
-    if (!users) {
-      createResponse(
-        response,
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        ReasonPhrases.INTERNAL_SERVER_ERROR
-      );
-      return;
-    }
-
-    createResponse(response, StatusCodes.CREATED, ReasonPhrases.CREATED, users);
-  }
-
+  
   async one(request: Request, response: Response, next: NextFunction) {
     const id = parseInt(request.params.id);
 
@@ -175,36 +156,5 @@ export class UserController {
     }
 
     createResponse(response, StatusCodes.OK, ReasonPhrases.OK, user);
-  }
-
-  async remove(request: Request, response: Response, next: NextFunction) {
-    const id = parseInt(request.params.id);
-    if (!id || isNaN(id)) {
-      createResponse(
-        response,
-        StatusCodes.BAD_REQUEST,
-        "Invalid id parameter."
-      );
-      return;
-    }
-
-    let userToRemove = await this.userRepository.findOneBy({ id });
-
-    if (!userToRemove) {
-      createResponse(response, StatusCodes.NOT_FOUND, "User not found.");
-      return;
-    }
-
-    const deleted = await this.userRepository.remove(userToRemove);
-    if (!deleted) {
-      createResponse(
-        response,
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        ReasonPhrases.INTERNAL_SERVER_ERROR
-      );
-      return;
-    }
-
-    createResponse(response, StatusCodes.OK, "User has been removed.");
   }
 }
