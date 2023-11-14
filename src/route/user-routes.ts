@@ -40,4 +40,10 @@ export const UserRoutes: Route[] = [
     controller: UserController,
     action: "login",
   },
+  {
+    method: "get",
+    route: "/self",
+    controller: UserController,
+    action: "self",
+  },
 ];

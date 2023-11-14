@@ -207,4 +207,26 @@ export class UserController {
 
     createResponse(response, StatusCodes.OK, "User has been removed.");
   }
+
+  async self(request: Request, response: Response, next: NextFunction) {
+    const id = response.locals.id;
+
+    const user = await this.userRepository.findOne({
+      where: { id },
+      cache: true,
+    });
+
+    if (!user) {
+      createResponse(response, StatusCodes.NOT_FOUND, "User not found.");
+      return;
+    }
+
+    const userData = {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+    };
+
+    createResponse(response, StatusCodes.OK, ReasonPhrases.OK, userData);
+  }
 }
