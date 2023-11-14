@@ -44,9 +44,11 @@ export class CollectionController {
     const { title } = req.body as CreateRequest;
 
     if (!title) {
-      res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: ReasonPhrases.BAD_REQUEST });
+      createResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "Field title cannot be empty."
+      );
       return;
     }
 
@@ -73,10 +75,7 @@ export class CollectionController {
     const userId = res.locals.id;
 
     if (!id || isNaN(id)) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
-
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
       return;
     }
 
@@ -84,10 +83,7 @@ export class CollectionController {
 
     // validate collection
     if (!collection) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
-      });
-
+      createResponse(res, StatusCodes.NOT_FOUND, "Collection not found.");
       return;
     }
 
@@ -117,27 +113,7 @@ export class CollectionController {
     const userId = res.locals.id;
 
     if (!id || isNaN(id)) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
-
-      return;
-    }
-
-    const collection = await this.colleRepo.findOneBy({ id: id });
-
-    // validate collection
-    if (!collection) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
-      });
-
-      return;
-    }
-
-    // validate owner
-    if (collection.user_id !== userId) {
-      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
       return;
     }
 
@@ -145,9 +121,25 @@ export class CollectionController {
 
     // validate input
     if (!title) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
+      createResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "Field title cannot be empty."
+      );
+      return;
+    }
+
+    const collection = await this.colleRepo.findOneBy({ id: id });
+
+    // validate collection
+    if (!collection) {
+      createResponse(res, StatusCodes.NOT_FOUND, "Collection not found.");
+      return;
+    }
+
+    // validate owner
+    if (collection.user_id !== userId) {
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
 
@@ -173,20 +165,23 @@ export class CollectionController {
     const collecId = parseInt(req.params.id);
     const { recipe_id } = req.body as AddRecipeRequest;
 
-    if (!recipe_id || !collecId || isNaN(collecId)) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
+    if (!collecId || isNaN(collecId)) {
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
+      return;
+    }
 
+    if (!recipe_id) {
+      createResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "Field recipe_id cannot be empty."
+      );
       return;
     }
 
     const collection = await this.colleRepo.findOneBy({ id: collecId });
     if (!collection) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
-      });
-
+      createResponse(res, StatusCodes.NOT_FOUND, "Collection not found.");
       return;
     }
 
@@ -198,10 +193,7 @@ export class CollectionController {
     const recipe = await this.recipeRepo.findOneBy({ id: recipe_id });
 
     if (!recipe) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
-      });
-
+      createResponse(res, StatusCodes.NOT_FOUND, "Recipe not found.");
       return;
     }
 
@@ -233,21 +225,24 @@ export class CollectionController {
     const collecId = parseInt(req.params.id);
     const { recipe_id } = req.body as AddRecipeRequest;
 
-    if (!recipe_id || !collecId || isNaN(collecId)) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: ReasonPhrases.BAD_REQUEST,
-      });
+    if (!collecId || isNaN(collecId)) {
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
+      return;
+    }
 
+    if (!recipe_id) {
+      createResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "Field recipe_id cannot be empty."
+      );
       return;
     }
 
     // validate collection
     const collection = await this.colleRepo.findOneBy({ id: collecId });
     if (!collection) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
-      });
-
+      createResponse(res, StatusCodes.NOT_FOUND, "Collection not found.");
       return;
     }
 
@@ -261,10 +256,7 @@ export class CollectionController {
     const recipe = await this.recipeRepo.findOneBy({ id: recipe_id });
 
     if (!recipe) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
-      });
-
+      createResponse(res, StatusCodes.NOT_FOUND, "Recipe not found.");
       return;
     }
 
@@ -281,13 +273,11 @@ export class CollectionController {
 
     // validate colleRecipe
     if (!colleRecipeToRemove) {
-      res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: ReasonPhrases.NOT_FOUND });
+      createResponse(res, StatusCodes.NOT_FOUND, "Recipe not found.");
       return;
     }
 
-    const deleted = await this.recipeRepo.remove(colleRecipeToRemove);
+    const deleted = await this.colleRecipeRepo.remove(colleRecipeToRemove);
 
     if (!deleted) {
       createResponse(

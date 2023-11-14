@@ -47,7 +47,7 @@ export class RecipeController {
     const id = parseInt(req.params.id);
 
     if (!id || isNaN(id)) {
-      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id.");
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
       return;
     }
 
@@ -83,7 +83,7 @@ export class RecipeController {
     const id = parseInt(req.params.id);
 
     if (!id || isNaN(id)) {
-      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id.");
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
       return;
     }
 
@@ -111,7 +111,7 @@ export class RecipeController {
     const user_id = res.locals.id;
 
     if (!id || isNaN(id)) {
-      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id.");
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
       return;
     }
 
@@ -294,7 +294,7 @@ export class RecipeController {
     const user_id = res.locals.id;
 
     if (!id || isNaN(id)) {
-      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id.");
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
       return;
     }
 

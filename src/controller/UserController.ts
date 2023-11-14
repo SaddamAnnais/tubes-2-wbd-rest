@@ -153,7 +153,11 @@ export class UserController {
     const id = parseInt(request.params.id);
 
     if (!id || isNaN(id)) {
-      createResponse(response, StatusCodes.BAD_REQUEST, "Invalid id.");
+      createResponse(
+        response,
+        StatusCodes.BAD_REQUEST,
+        "Invalid id parameter."
+      );
       return;
     }
 
@@ -176,7 +180,11 @@ export class UserController {
   async remove(request: Request, response: Response, next: NextFunction) {
     const id = parseInt(request.params.id);
     if (!id || isNaN(id)) {
-      createResponse(response, StatusCodes.BAD_REQUEST, "Invalid id.");
+      createResponse(
+        response,
+        StatusCodes.BAD_REQUEST,
+        "Invalid id parameter."
+      );
       return;
     }
 
