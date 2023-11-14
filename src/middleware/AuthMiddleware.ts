@@ -4,6 +4,7 @@ import { AuthToken } from "../type/auth";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { AppDataSource } from "../config/data-source";
 import { User } from "../entity/User";
+import { createResponse } from "../util/create-response";
 
 export class AuthMiddleware {
   async authenticate(req: Request, res: Response, next: NextFunction) {
@@ -11,7 +12,10 @@ export class AuthMiddleware {
     const token = authHeader && authHeader.split(" ")[1];
 
     // if token is not set
-    if (token == null) return res.sendStatus(401);
+    if (token == null) {
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      return;
+    }
 
     try {
       jwt.verify(token, process.env.SECRET_ACCESS_TOKEN);
@@ -26,9 +30,11 @@ export class AuthMiddleware {
       });
 
       if (!userData) {
-        res
-          .status(StatusCodes.UNAUTHORIZED)
-          .json({ message: ReasonPhrases.UNAUTHORIZED });
+        createResponse(
+          res,
+          StatusCodes.UNAUTHORIZED,
+          ReasonPhrases.UNAUTHORIZED
+        );
         return;
       }
 
@@ -37,10 +43,8 @@ export class AuthMiddleware {
       next();
     } catch (err) {
       res.clearCookie("token");
-      res
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: ReasonPhrases.UNAUTHORIZED });
-      // res.redirect("/login");
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      return;
     }
   }
 }
