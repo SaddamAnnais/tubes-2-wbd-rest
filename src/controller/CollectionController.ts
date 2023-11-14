@@ -6,6 +6,7 @@ import {
   CreateRequest,
   UpdateRequest,
   AddRecipeRequest,
+  CollecWithCover,
 } from "../type/collection";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { Recipe } from "../entity/Recipe";
@@ -22,6 +23,11 @@ export class CollectionController {
       where: {
         user_id: user_id,
       },
+      relations: {
+        collectionRecipe: {
+          recipe: true,
+        },
+      },
     });
 
     if (!collections) {
@@ -33,9 +39,23 @@ export class CollectionController {
       return;
     }
 
-    // TODO: APPEND STATIC, APPEND DEFAULT
+    let collecWithCover: CollecWithCover[] = [];
+    collections.forEach((collec) => {
+      collecWithCover.push({
+        id: collec.id,
+        title: collec.title,
+        created_at: collec.created_at,
+        total_recipe: collec.total_recipe,
+        cover: `${process.env.REST_URL}/public/${
+          collec.collectionRecipe[0]
+            ? collec.collectionRecipe[0].recipe.image_path
+            : "default-pro-cover.png"
+        }`,
+        user_id: collec.user_id,
+      });
+    });
 
-    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collections);
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collecWithCover);
   }
 
   async get(req: Request, res: Response) {
@@ -47,7 +67,16 @@ export class CollectionController {
       return;
     }
 
-    const collection = await this.colleRepo.findOneBy({ id: id });
+    const collection = await this.colleRepo.findOne({
+      where: {
+        id: id,
+      },
+      relations: {
+        collectionRecipe: {
+          recipe: true,
+        },
+      },
+    });
 
     // validate collection
     if (!collection) {
@@ -61,7 +90,34 @@ export class CollectionController {
       return;
     }
 
-    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collection);
+    let cover = `${process.env.REST_URL}/public/default-pro-cover.png`;
+    if (collection.total_recipe !== 0) {
+      const coverRecipe = await this.colleRecipeRepo.findOne({
+        where: { collectionId: id },
+        relations: {
+          recipe: true,
+        },
+      });
+
+      if (coverRecipe) {
+        cover = `${process.env.REST_URL}/public/${coverRecipe.recipe.image_path}`;
+      }
+    }
+
+    const collecWithCover: CollecWithCover = {
+      id: collection.id,
+      title: collection.title,
+      created_at: collection.created_at,
+      total_recipe: collection.total_recipe,
+      cover: `${process.env.REST_URL}/public/${
+        collection.collectionRecipe[0]
+          ? collection.collectionRecipe[0].recipe.image_path
+          : "default-pro-cover.png"
+      }`,
+      user_id: collection.user_id,
+    };
+
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collecWithCover);
   }
 
   async getRecipes(req: Request, res: Response) {
