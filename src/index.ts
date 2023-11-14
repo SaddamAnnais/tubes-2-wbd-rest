@@ -9,11 +9,21 @@ import { Route } from "./type/route";
 import { RecipeRoutes } from "./route/recipe-routes";
 import * as path from "path";
 import { CollectionRoutes } from "./route/collection-routes";
+import cors from "cors";
 
 AppDataSource.initialize()
   .then(async () => {
     // create express app
     const app = express();
+    app.use(
+      cors({
+        origin: [process.env.APP_URL, process.env.SPA_URL],
+        credentials: true,
+        exposedHeaders: ["Authorization", "X-API-KEY"],
+        methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
+      })
+    );
+
     app.use(bodyParser.json());
     app.use(
       "/public",
