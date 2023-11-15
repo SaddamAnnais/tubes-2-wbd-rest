@@ -1,4 +1,6 @@
+import { NextFunction, Request, Response } from "express";
 import { UserController } from "../controller/UserController";
+import { AuthMiddleware } from "../middleware/AuthMiddleware";
 import { Route } from "../type/route";
 
 // example of routes
@@ -43,6 +45,11 @@ export const UserRoutes: Route[] = [
   {
     method: "get",
     route: "/self",
+    middleware: [
+      (req: Request, res: Response, next: NextFunction) => {
+        new AuthMiddleware().authenticate(req, res, next);
+      },
+    ],
     controller: UserController,
     action: "self",
   },
