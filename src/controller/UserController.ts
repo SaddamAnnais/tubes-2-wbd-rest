@@ -133,6 +133,15 @@ export class UserController {
   async all(request: Request, response: Response, next: NextFunction) {
     // cache: {id: string, milliseconds: 2000}
     // this will use the custom key and duration provided in the request
+    if (!response.locals.isAdmin) {
+      createResponse(
+        response,
+        StatusCodes.UNAUTHORIZED,
+        ReasonPhrases.UNAUTHORIZED
+      );
+      return;
+    }
+
     const users = this.userRepository.find({
       cache: { id: "/users", milliseconds: 120000 },
     });
@@ -150,6 +159,15 @@ export class UserController {
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
+    if (!response.locals.isAdmin) {
+      createResponse(
+        response,
+        StatusCodes.UNAUTHORIZED,
+        ReasonPhrases.UNAUTHORIZED
+      );
+      return;
+    }
+
     const id = parseInt(request.params.id);
 
     if (!id || isNaN(id)) {
@@ -225,6 +243,7 @@ export class UserController {
       id: user.id,
       username: user.username,
       name: user.name,
+      isAdmin: user.is_admin,
     };
 
     createResponse(response, StatusCodes.OK, ReasonPhrases.OK, userData);
