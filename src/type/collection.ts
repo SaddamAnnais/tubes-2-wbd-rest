@@ -1,5 +1,3 @@
-import { Collection } from "../entity/Collection";
-
 export interface CreateRequest {
   title: string;
 }
