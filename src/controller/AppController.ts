@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { SoapService } from "./SoapService";
-import { ProRequest, UserSubs } from "../type/subscription";
+import { UserSubs } from "../type/subscription";
 import { createResponse } from "../util/create-response";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { AppDataSource } from "../config/data-source";
@@ -19,17 +19,7 @@ export class AppController {
   private recipeRepo = AppDataSource.getRepository(Recipe);
 
   async getCreators(req: Request, res: Response) {
-    // Check body
-    const { requesterID }: ProRequest = req.body;
-
-    if (!requesterID) {
-      createResponse(
-        res,
-        StatusCodes.BAD_REQUEST,
-        "Field requesterID cannot be empty."
-      );
-      return;
-    }
+    const requesterID = res.locals.requesterID;
 
     // Get all creators
     const creators = await this.userRepo.find({
@@ -63,23 +53,13 @@ export class AppController {
   }
 
   async getCollectionsByCreator(req: Request, res: Response) {
+    const requesterID = res.locals.requesterID;
+
     // Check params
     const creatorId = parseInt(req.params.creatorId);
 
     if (!creatorId || isNaN(creatorId)) {
       createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
-      return;
-    }
-
-    // Check body
-    const { requesterID }: ProRequest = req.body;
-
-    if (!requesterID) {
-      createResponse(
-        res,
-        StatusCodes.BAD_REQUEST,
-        "Field requesterID cannot be empty."
-      );
       return;
     }
 
@@ -137,24 +117,13 @@ export class AppController {
   }
 
   async getCollection(req: Request, res: Response) {
+    const requesterID = res.locals.requesterID;
+
     // Check params
     const collecId = parseInt(req.params.collecId);
 
     if (!collecId || isNaN(collecId)) {
       createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
-
-      return;
-    }
-
-    // Check body
-    const { requesterID }: ProRequest = req.body;
-
-    if (!requesterID) {
-      createResponse(
-        res,
-        StatusCodes.BAD_REQUEST,
-        "Field requesterID cannot be empty."
-      );
 
       return;
     }
@@ -209,24 +178,13 @@ export class AppController {
   }
 
   async getCollectionRecipes(req: Request, res: Response) {
+    const requesterID = res.locals.requesterID;
+
     // Check params
     const collecId = parseInt(req.params.collecId);
 
     if (!collecId || isNaN(collecId)) {
       createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
-      return;
-    }
-
-    // Check body
-    const { requesterID }: ProRequest = req.body;
-
-    if (!requesterID) {
-      createResponse(
-        res,
-        StatusCodes.BAD_REQUEST,
-        "Field requesterID cannot be empty."
-      );
-
       return;
     }
 
@@ -280,24 +238,13 @@ export class AppController {
   }
 
   async getRecipe(req: Request, res: Response) {
+    const requesterID = res.locals.requesterID;
+
     // Check params
     const recipeId = parseInt(req.params.recipeId);
 
     if (!recipeId || isNaN(recipeId)) {
       createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
-      return;
-    }
-
-    // Check body
-    const { requesterID }: ProRequest = req.body;
-
-    if (!requesterID) {
-      createResponse(
-        res,
-        StatusCodes.BAD_REQUEST,
-        "Field requesterID cannot be empty."
-      );
-
       return;
     }
 
@@ -331,23 +278,13 @@ export class AppController {
   }
 
   async getRecipeVideo(req: Request, res: Response) {
+    const requesterID = res.locals.requesterID;
+
     // Check params
     const recipeId = parseInt(req.params.recipeId);
 
     if (!recipeId || isNaN(recipeId)) {
       createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
-      return;
-    }
-
-    // Check body
-    const { requesterID }: ProRequest = req.body;
-
-    if (!requesterID) {
-      createResponse(
-        res,
-        StatusCodes.BAD_REQUEST,
-        "Field requesterID cannot be empty."
-      );
       return;
     }
 
@@ -382,22 +319,12 @@ export class AppController {
   }
 
   async getRecipesByCreator(req: Request, res: Response) {
+    const requesterID = res.locals.requesterID;
+
     // Check params
     const creatorId = parseInt(req.params.creatorId);
     if (!creatorId || isNaN(creatorId)) {
       createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
-      return;
-    }
-
-    // Check body
-    const { requesterID }: ProRequest = req.body;
-
-    if (!requesterID) {
-      createResponse(
-        res,
-        StatusCodes.BAD_REQUEST,
-        "Field requesterID cannot be empty."
-      );
       return;
     }
 
