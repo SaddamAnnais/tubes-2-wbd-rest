@@ -11,6 +11,7 @@ import * as path from "path";
 import { CollectionRoutes } from "./route/collection-routes";
 import cors from "cors";
 import { SoapRoutes } from "./route/soap-routes";
+import { AppRoutes } from "./route/app-routes";
 
 AppDataSource.initialize()
   .then(async () => {
@@ -36,7 +37,8 @@ AppDataSource.initialize()
     const Routes: Route[] = UserRoutes.concat(
       RecipeRoutes,
       CollectionRoutes,
-      SoapRoutes
+      SoapRoutes,
+      AppRoutes
     );
 
     Routes.forEach((route) => {

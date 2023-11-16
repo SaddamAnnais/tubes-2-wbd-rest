@@ -7,10 +7,9 @@ import { ProRequest } from "../type/subscription";
 
 export class AppMiddleware {
   async authenticate(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers["X-API-KEY"];
-    const token = authHeader;
+    const authHeader = req.headers["x-api-key"];
 
-    if (!token || token !== process.env.APP_KEY) {
+    if (!authHeader || authHeader !== process.env.APP_KEY) {
       createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
