@@ -71,7 +71,7 @@ export class UserController {
     });
 
     // set token as cookie
-    res.cookie("token", accessToken, { httpOnly: true });
+    // res.cookie("token", accessToken, { httpOnly: true });
 
     // set status and message
     createResponse(res, StatusCodes.CREATED, ReasonPhrases.CREATED, {

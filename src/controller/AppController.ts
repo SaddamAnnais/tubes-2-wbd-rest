@@ -89,6 +89,16 @@ export class AppController {
       cache: true,
     });
 
+    // Get creator information
+    const creator = await this.userRepo.findOne({
+      where: {
+        id: creatorId,
+      },
+    });
+
+    const creator_id: number = creator.id;
+    const creator_name: string = creator.name;
+
     // Check typeorm error
     if (!collections) {
       createResponse(
@@ -111,11 +121,18 @@ export class AppController {
             ? collec.collectionRecipe[0].recipe.image_path
             : "default-pro-cover.png"
         }`,
-        user_id: collec.user_id,
+        user_id : collec.user_id,
+        creator_name : collec.user.name,
       });
     });
 
-    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collecWithCover);
+    const data = {
+      collections: collecWithCover,
+      creator_id,
+      creator_name,
+    };
+
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, data);
   }
 
   async getCollection(req: Request, res: Response) {
@@ -173,7 +190,8 @@ export class AppController {
           ? collection.collectionRecipe[0].recipe.image_path
           : "default-pro-cover.png"
       }`,
-      user_id: collection.user_id,
+      user_id : collection.user_id,
+      creator_name : collection.user.name,
     };
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collecWithCover);

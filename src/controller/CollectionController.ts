@@ -24,6 +24,7 @@ export class CollectionController {
         user_id: user_id,
       },
       relations: {
+        user: true,
         collectionRecipe: {
           recipe: true,
         },
@@ -52,6 +53,7 @@ export class CollectionController {
             : "default-pro-cover.png"
         }`,
         user_id: collec.user_id,
+        creator_name: collec.user.name,
       });
     });
 
@@ -72,6 +74,7 @@ export class CollectionController {
         id: id,
       },
       relations: {
+        user: true,
         collectionRecipe: {
           recipe: true,
         },
@@ -101,6 +104,7 @@ export class CollectionController {
           : "default-pro-cover.png"
       }`,
       user_id: collection.user_id,
+      creator_name: collection.user.name,
     };
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collecWithCover);
@@ -131,7 +135,12 @@ export class CollectionController {
 
     const recipes = await this.colleRecipeRepo.find({
       where: { collectionId: id },
+      select: {
+        recipeId: false,
+        collectionId: false,
+      },
       relations: {
+        collection: false,
         recipe: true,
       },
     });

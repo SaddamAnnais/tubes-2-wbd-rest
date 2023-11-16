@@ -22,4 +22,5 @@ export interface CollecWithCover {
   total_recipe: number;
   cover: string;
   user_id: number;
+  creator_name: string;
 }
