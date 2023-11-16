@@ -5,7 +5,7 @@ import { Route } from "../type/route";
 
 const appMiddleware = new AppMiddleware();
 
-export const CollectionRoutes: Route[] = [
+export const AppRoutes: Route[] = [
   {
     method: "get",
     route: "/pro/creator",

@@ -4,13 +4,13 @@ import { AuthToken } from "../type/auth";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { createResponse } from "../util/create-response";
 import { ProRequest } from "../type/subscription";
-
+import { PHPConfig } from "../config/php-config";
 export class AppMiddleware {
   async authenticate(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers["X-API-KEY"];
+    const authHeader = req.headers["x-api-key"];
     const token = authHeader;
 
-    if (!token || token !== process.env.APP_KEY) {
+    if (!token || token !== PHPConfig.key) {
       createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }

@@ -17,8 +17,8 @@ services:
         condition: service_healthy
 
     # COMMENT THIS IF YOU USE DOCKER CONFIG TO START ALL CONTAINERS
-    networks:
-      - api-postgresql-redis
+    # networks:
+    #   - api-postgresql-redis
 
   cooklyst-rest-db:
     image: postgres:latest
@@ -39,8 +39,8 @@ services:
     restart: always
 
     # COMMENT THIS IF YOU USE DOCKER CONFIG TO START ALL CONTAINERS
-    networks:
-      - api-postgresql-redis
+    # networks:
+    #   - api-postgresql-redis
 
   cooklyst-rest-cache:
     image: redis:latest
@@ -55,10 +55,10 @@ services:
       retries: 5
 
     # COMMENT THIS IF YOU USE DOCKER CONFIG TO START ALL CONTAINERS
-    networks:
-      - api-postgresql-redis
+    # networks:
+    #   - api-postgresql-redis
 
 # COMMENT THIS IF YOU USE DOCKER CONFIG TO START ALL CONTAINERS
-networks:
-  api-postgresql-redis:
-    driver: bridge
+# networks:
+#   api-postgresql-redis:
+#     driver: bridge
