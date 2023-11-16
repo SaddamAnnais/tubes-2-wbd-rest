@@ -1,9 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import { AuthToken } from "../type/auth";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { createResponse } from "../util/create-response";
-import { ProRequest } from "../type/subscription";
 
 export class AppMiddleware {
   async authenticate(req: Request, res: Response, next: NextFunction) {
@@ -14,13 +11,13 @@ export class AppMiddleware {
       return;
     }
 
-    const { requesterID }: ProRequest = req.body;
+    const requesterID = req.query.requesterID;
 
     if (!requesterID) {
       createResponse(
         res,
         StatusCodes.BAD_REQUEST,
-        "Field requesterID cannot be empty."
+        "Query params requesterID cannot be empty."
       );
       return;
     }
