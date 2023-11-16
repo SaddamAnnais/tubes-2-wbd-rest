@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { SoapService } from "./SoapService";
+import { SoapService } from "../service/SoapService";
 import { UserSubs } from "../type/subscription";
 import { createResponse } from "../util/create-response";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
@@ -25,6 +25,7 @@ export class AppController {
     const creators = await this.userRepo.find({
       select: { password_hash: false, is_admin: false },
       where: { is_admin: false },
+      cache: true,
     });
 
     // Check typeorm error
@@ -85,6 +86,7 @@ export class AppController {
           recipe: true,
         },
       },
+      cache: true,
     });
 
     // Check typeorm error
