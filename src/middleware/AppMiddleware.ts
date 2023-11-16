@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { createResponse } from "../util/create-response";
-
+import { PHPConfig } from "../config/php-config";
 export class AppMiddleware {
   async authenticate(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers["x-api-key"];
+    const token = authHeader;
 
-    if (!authHeader || authHeader !== process.env.APP_KEY) {
+    if (!token || token !== PHPConfig.key) {
       createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }

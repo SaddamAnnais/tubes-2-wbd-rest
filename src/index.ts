@@ -26,6 +26,9 @@ AppDataSource.initialize()
       })
     );
 
+    app.use(bodyParser.urlencoded({
+      extended: true
+    }));
     app.use(bodyParser.json());
     app.use(
       "/public",
@@ -38,7 +41,7 @@ AppDataSource.initialize()
       RecipeRoutes,
       CollectionRoutes,
       SoapRoutes,
-      AppRoutes
+      AppRoutes,
     );
 
     Routes.forEach((route) => {
