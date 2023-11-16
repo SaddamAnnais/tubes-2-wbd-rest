@@ -1,3 +1,4 @@
+import { AppController } from "../controller/AppController";
 import { CollectionController } from "../controller/CollectionController";
 import { RecipeController } from "../controller/RecipeController";
 import { SoapController } from "../controller/SoapController";
@@ -12,6 +13,7 @@ export interface Route {
     | typeof UserController
     | typeof RecipeController
     | typeof CollectionController
-    | typeof SoapController;
+    | typeof SoapController
+    | typeof AppController;
   action: string;
 }
