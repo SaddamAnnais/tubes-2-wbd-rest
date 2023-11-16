@@ -36,7 +36,6 @@ export class RecipeController {
     }
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipes);
-    return;
   }
 
   async getDetails(req: Request, res: Response) {
