@@ -12,7 +12,7 @@ export class AuthMiddleware {
     const token = authHeader && authHeader.split(" ")[1];
 
     // if token is not set
-    if (token == null) {
+    if (!token) {
       createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }

@@ -90,20 +90,6 @@ export class CollectionController {
       return;
     }
 
-    let cover = `${process.env.REST_URL}/public/default-pro-cover.png`;
-    if (collection.total_recipe !== 0) {
-      const coverRecipe = await this.colleRecipeRepo.findOne({
-        where: { collectionId: id },
-        relations: {
-          recipe: true,
-        },
-      });
-
-      if (coverRecipe) {
-        cover = `${process.env.REST_URL}/public/${coverRecipe.recipe.image_path}`;
-      }
-    }
-
     const collecWithCover: CollecWithCover = {
       id: collection.id,
       title: collection.title,
