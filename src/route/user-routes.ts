@@ -26,18 +26,6 @@ export const UserRoutes: Route[] = [
   },
   {
     method: "post",
-    route: "/users",
-    controller: UserController,
-    action: "save",
-  },
-  {
-    method: "delete",
-    route: "/users/:id",
-    controller: UserController,
-    action: "remove",
-  },
-  {
-    method: "post",
     route: "/login",
     controller: UserController,
     action: "login",
