@@ -9,6 +9,7 @@ import { Collection } from "../entity/Collection";
 import { CollecWithCover } from "../type/collection";
 import { CollectionRecipe } from "../entity/CollectionRecipe";
 import { Recipe } from "../entity/Recipe";
+import * as path from "path";
 
 export class AppController {
   private soap = new SoapService();
@@ -18,6 +19,7 @@ export class AppController {
   private recipeRepo = AppDataSource.getRepository(Recipe);
 
   async getCreators(req: Request, res: Response) {
+    // Check body
     const { requesterID }: ProRequest = req.body;
 
     if (!requesterID) {
@@ -26,25 +28,26 @@ export class AppController {
         StatusCodes.BAD_REQUEST,
         "Field requesterID cannot be empty."
       );
-
       return;
     }
 
+    // Get all creators
     const creators = await this.userRepo.find({
       select: { password_hash: false, is_admin: false },
       where: { is_admin: false },
     });
 
+    // Check typeorm error
     if (!creators) {
       createResponse(
         res,
         StatusCodes.INTERNAL_SERVER_ERROR,
         ReasonPhrases.INTERNAL_SERVER_ERROR
       );
-
       return;
     }
 
+    // Generate subs status for each creator
     const creatorSubs: UserSubs[] = [];
     for (const el of creators) {
       const subsStatus = await this.soap.getStatus(el.id, requesterID);
@@ -60,14 +63,15 @@ export class AppController {
   }
 
   async getCollectionsByCreator(req: Request, res: Response) {
-    const creatorId = +req.params.creatorId;
+    // Check params
+    const creatorId = parseInt(req.params.creatorId);
 
     if (!creatorId || isNaN(creatorId)) {
       createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
-
       return;
     }
 
+    // Check body
     const { requesterID }: ProRequest = req.body;
 
     if (!requesterID) {
@@ -76,10 +80,10 @@ export class AppController {
         StatusCodes.BAD_REQUEST,
         "Field requesterID cannot be empty."
       );
-
       return;
     }
 
+    // Check subs status
     const subsStatus = await this.soap.getStatus(creatorId, requesterID);
 
     if (subsStatus !== "APPROVED") {
@@ -88,10 +92,10 @@ export class AppController {
         StatusCodes.UNAUTHORIZED,
         "Requester don't have access to pro content."
       );
-
       return;
     }
 
+    // Get data
     const collections = await this.colleRepo.find({
       where: {
         user_id: creatorId,
@@ -103,6 +107,7 @@ export class AppController {
       },
     });
 
+    // Check typeorm error
     if (!collections) {
       createResponse(
         res,
@@ -111,6 +116,7 @@ export class AppController {
       );
     }
 
+    // Generate cover
     let collecWithCover: CollecWithCover[] = [];
     collections.forEach((collec) => {
       collecWithCover.push({
@@ -131,7 +137,8 @@ export class AppController {
   }
 
   async getCollection(req: Request, res: Response) {
-    const collecId = +req.params.collecId;
+    // Check params
+    const collecId = parseInt(req.params.collecId);
 
     if (!collecId || isNaN(collecId)) {
       createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
@@ -139,6 +146,7 @@ export class AppController {
       return;
     }
 
+    // Check body
     const { requesterID }: ProRequest = req.body;
 
     if (!requesterID) {
@@ -151,6 +159,7 @@ export class AppController {
       return;
     }
 
+    // Get data
     const collection = await this.colleRepo.findOne({
       where: {
         id: collecId,
@@ -167,6 +176,7 @@ export class AppController {
       return;
     }
 
+    // Check subs status
     const subsStatus = await this.soap.getStatus(
       collection.user_id,
       requesterID
@@ -178,10 +188,10 @@ export class AppController {
         StatusCodes.UNAUTHORIZED,
         "Requester don't have access to pro content."
       );
-
       return;
     }
 
+    // Generate cover
     const collecWithCover: CollecWithCover = {
       id: collection.id,
       title: collection.title,
@@ -199,6 +209,7 @@ export class AppController {
   }
 
   async getCollectionRecipes(req: Request, res: Response) {
+    // Check params
     const collecId = parseInt(req.params.collecId);
 
     if (!collecId || isNaN(collecId)) {
@@ -206,6 +217,7 @@ export class AppController {
       return;
     }
 
+    // Check body
     const { requesterID }: ProRequest = req.body;
 
     if (!requesterID) {
@@ -218,19 +230,20 @@ export class AppController {
       return;
     }
 
+    // Get data
     const collection = await this.colleRepo.findOneBy({ id: collecId });
 
-    // validate collection
     if (!collection) {
       createResponse(res, StatusCodes.NOT_FOUND, "Collection not found.");
       return;
     }
 
-    // validate owner
+    // Check subs status
     const subsStatus = await this.soap.getStatus(
       collection.user_id,
       requesterID
     );
+
     if (subsStatus !== "APPROVED") {
       createResponse(
         res,
@@ -240,6 +253,7 @@ export class AppController {
       return;
     }
 
+    // Get data
     const recipes = await this.colleRecipeRepo.find({
       where: { collectionId: collecId },
       relations: {
@@ -247,6 +261,7 @@ export class AppController {
       },
     });
 
+    // Check typeorm error
     if (!recipes) {
       createResponse(
         res,
@@ -256,6 +271,7 @@ export class AppController {
       return;
     }
 
+    // Generate image path
     for (let recipe of recipes) {
       recipe.recipe.image_path = `${process.env.REST_URL}/public/${recipe.recipe.image_path}`;
     }
@@ -264,14 +280,15 @@ export class AppController {
   }
 
   async getRecipe(req: Request, res: Response) {
-    const user_id = res.locals.id;
-    const id = parseInt(req.params.id);
+    // Check params
+    const recipeId = parseInt(req.params.recipeId);
 
-    if (!id || isNaN(id)) {
+    if (!recipeId || isNaN(recipeId)) {
       createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
       return;
     }
 
+    // Check body
     const { requesterID }: ProRequest = req.body;
 
     if (!requesterID) {
@@ -284,12 +301,13 @@ export class AppController {
       return;
     }
 
+    // Get data
     const recipe = await this.recipeRepo.findOne({
       select: {
-        video_path: false, // serve image as static file (publicly available)
+        video_path: false,
       },
       where: {
-        id: id,
+        id: recipeId,
       },
     });
 
@@ -298,18 +316,124 @@ export class AppController {
       return;
     }
 
+    // Check subs status
     const subsStatus = await this.soap.getStatus(recipe.user_id, requesterID);
+
     if (subsStatus !== "APPROVED") {
       createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
       return;
     }
 
+    // Generate image path
     recipe.image_path = `${process.env.REST_URL}/public/${recipe.image_path}`;
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipe);
   }
 
-  async getRecipeVideo(req: Request, res: Response) {}
+  async getRecipeVideo(req: Request, res: Response) {
+    // Check params
+    const recipeId = parseInt(req.params.recipeId);
 
-  async getRecipesByCreator(req: Request, res: Response) {}
+    if (!recipeId || isNaN(recipeId)) {
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
+      return;
+    }
+
+    // Check body
+    const { requesterID }: ProRequest = req.body;
+
+    if (!requesterID) {
+      createResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "Field requesterID cannot be empty."
+      );
+      return;
+    }
+
+    // Get data
+    const recipe = await this.recipeRepo.findOne({
+      select: {
+        video_path: true,
+        user_id: true,
+      },
+      where: {
+        id: recipeId,
+      },
+    });
+
+    if (!recipe) {
+      createResponse(res, StatusCodes.NOT_FOUND, "Recipe not found.");
+      return;
+    }
+
+    // Check subs status
+    const subsStatus = await this.soap.getStatus(recipe.user_id, requesterID);
+
+    if (subsStatus !== "APPROVED") {
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      return;
+    }
+
+    // Send file
+    res.sendFile(
+      path.join(__dirname, "..", "..", "storage", "videos", recipe.video_path)
+    );
+  }
+
+  async getRecipesByCreator(req: Request, res: Response) {
+    // Check params
+    const creatorId = parseInt(req.params.creatorId);
+    if (!creatorId || isNaN(creatorId)) {
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
+      return;
+    }
+
+    // Check body
+    const { requesterID }: ProRequest = req.body;
+
+    if (!requesterID) {
+      createResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "Field requesterID cannot be empty."
+      );
+      return;
+    }
+
+    // Check subs status
+    const subsStatus = await this.soap.getStatus(creatorId, requesterID);
+
+    if (subsStatus !== "APPROVED") {
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      return;
+    }
+
+    // Get data
+    const recipes = await this.recipeRepo.find({
+      select: {
+        video_path: false,
+      },
+      where: {
+        user_id: creatorId,
+      },
+    });
+
+    // Check typeorm error
+    if (!recipes) {
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
+      return;
+    }
+
+    // Generate image path
+    for (let recipe of recipes) {
+      recipe.image_path = `${process.env.REST_URL}/public/${recipe.image_path}`;
+    }
+
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipes);
+  }
 }
