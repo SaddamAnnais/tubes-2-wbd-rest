@@ -130,31 +130,10 @@ export class UserController {
     });
   }
   
-  async one(request: Request, response: Response, next: NextFunction) {
-    if (!response.locals.isAdmin) {
-      createResponse(
-        response,
-        StatusCodes.UNAUTHORIZED,
-        ReasonPhrases.UNAUTHORIZED
-      );
-      return;
-    }
-
-    const id = parseInt(request.params.id);
-
-    if (!id || isNaN(id)) {
-      createResponse(
-        response,
-        StatusCodes.BAD_REQUEST,
-        "Invalid id parameter."
-      );
-      return;
-    }
+  async self(request: Request, response: Response, next: NextFunction) {
+    const id = response.locals.id;
 
     const user = await this.userRepository.findOne({
-      // cache: true
-      // this will use the default duration time defined in data-source
-      // the key will be the sql query made by type orm
       where: { id },
       cache: true,
     });
@@ -164,6 +143,13 @@ export class UserController {
       return;
     }
 
-    createResponse(response, StatusCodes.OK, ReasonPhrases.OK, user);
+    const userData = {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      isAdmin: user.is_admin,
+    };
+
+    createResponse(response, StatusCodes.OK, ReasonPhrases.OK, userData);
   }
 }

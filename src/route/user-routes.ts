@@ -19,12 +19,6 @@ export const UserRoutes: Route[] = [
     action: "register",
   },
   {
-    method: "get",
-    route: "/users/:id",
-    controller: UserController,
-    action: "one",
-  },
-  {
     method: "post",
     route: "/login",
     controller: UserController,
