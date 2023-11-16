@@ -10,6 +10,7 @@ import { RecipeRoutes } from "./route/recipe-routes";
 import * as path from "path";
 import { CollectionRoutes } from "./route/collection-routes";
 import cors from "cors";
+import { SoapRoutes } from "./route/soap-routes";
 
 AppDataSource.initialize()
   .then(async () => {
@@ -32,7 +33,11 @@ AppDataSource.initialize()
 
     // register express routes from defined application routes
     // const Routes = UserRoutes.concat(RecipeRoute, Route2, Route3 ....)
-    const Routes: Route[] = UserRoutes.concat(RecipeRoutes, CollectionRoutes);
+    const Routes: Route[] = UserRoutes.concat(
+      RecipeRoutes,
+      CollectionRoutes,
+      SoapRoutes
+    );
 
     Routes.forEach((route) => {
       if (route.middleware) {

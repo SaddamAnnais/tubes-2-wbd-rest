@@ -21,9 +21,6 @@ export class Collection {
   @CreateDateColumn()
   created_at: Date;
 
-  @Column({ type: String, nullable: true })
-  cover: string;
-
   @Column({ type: "int", default: 0 })
   total_recipe: number;
 

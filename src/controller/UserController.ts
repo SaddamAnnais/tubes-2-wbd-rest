@@ -131,6 +131,15 @@ export class UserController {
   }
   
   async one(request: Request, response: Response, next: NextFunction) {
+    if (!response.locals.isAdmin) {
+      createResponse(
+        response,
+        StatusCodes.UNAUTHORIZED,
+        ReasonPhrases.UNAUTHORIZED
+      );
+      return;
+    }
+
     const id = parseInt(request.params.id);
 
     if (!id || isNaN(id)) {

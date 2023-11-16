@@ -6,6 +6,7 @@ import {
   CreateRequest,
   UpdateRequest,
   AddRecipeRequest,
+  CollecWithCover,
 } from "../type/collection";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { Recipe } from "../entity/Recipe";
@@ -19,11 +20,13 @@ export class CollectionController {
   async getAll(req: Request, res: Response) {
     const user_id = res.locals.id;
     const collections = await this.colleRepo.find({
-      select: {
-        cover: false, // nanti
-      },
       where: {
         user_id: user_id,
+      },
+      relations: {
+        collectionRecipe: {
+          recipe: true,
+        },
       },
     });
 
@@ -36,7 +39,117 @@ export class CollectionController {
       return;
     }
 
-    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collections);
+    let collecWithCover: CollecWithCover[] = [];
+    collections.forEach((collec) => {
+      collecWithCover.push({
+        id: collec.id,
+        title: collec.title,
+        created_at: collec.created_at,
+        total_recipe: collec.total_recipe,
+        cover: `${process.env.REST_URL}/public/${
+          collec.collectionRecipe[0]
+            ? collec.collectionRecipe[0].recipe.image_path
+            : "default-pro-cover.png"
+        }`,
+        user_id: collec.user_id,
+      });
+    });
+
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collecWithCover);
+  }
+
+  async get(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    const userId = res.locals.id;
+
+    if (!id || isNaN(id)) {
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
+      return;
+    }
+
+    const collection = await this.colleRepo.findOne({
+      where: {
+        id: id,
+      },
+      relations: {
+        collectionRecipe: {
+          recipe: true,
+        },
+      },
+    });
+
+    // validate collection
+    if (!collection) {
+      createResponse(res, StatusCodes.NOT_FOUND, "Collection not found.");
+      return;
+    }
+
+    // validate owner
+    if (collection.user_id !== userId) {
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      return;
+    }
+
+    const collecWithCover: CollecWithCover = {
+      id: collection.id,
+      title: collection.title,
+      created_at: collection.created_at,
+      total_recipe: collection.total_recipe,
+      cover: `${process.env.REST_URL}/public/${
+        collection.collectionRecipe[0]
+          ? collection.collectionRecipe[0].recipe.image_path
+          : "default-pro-cover.png"
+      }`,
+      user_id: collection.user_id,
+    };
+
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collecWithCover);
+  }
+
+  async getRecipes(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    const userId = res.locals.id;
+
+    if (!id || isNaN(id)) {
+      createResponse(res, StatusCodes.BAD_REQUEST, "Invalid id parameter.");
+      return;
+    }
+
+    const collection = await this.colleRepo.findOneBy({ id: id });
+
+    // validate collection
+    if (!collection) {
+      createResponse(res, StatusCodes.NOT_FOUND, "Collection not found.");
+      return;
+    }
+
+    // validate owner
+    if (collection.user_id !== userId) {
+      createResponse(res, StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED);
+      return;
+    }
+
+    const recipes = await this.colleRecipeRepo.find({
+      where: { collectionId: id },
+      relations: {
+        recipe: true,
+      },
+    });
+
+    if (!recipes) {
+      createResponse(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+      );
+      return;
+    }
+
+    for (let recipe of recipes) {
+      recipe.recipe.image_path = `${process.env.REST_URL}/public/${recipe.recipe.image_path}`;
+    }
+
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipes);
   }
 
   async create(req: Request, res: Response) {
@@ -217,6 +330,9 @@ export class CollectionController {
       return;
     }
 
+    collection.total_recipe += 1;
+    await this.colleRepo.save(collection);
+
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }
 
@@ -287,6 +403,9 @@ export class CollectionController {
       );
       return;
     }
+
+    collection.total_recipe -= 1;
+    await this.colleRepo.save(collection);
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK);
   }

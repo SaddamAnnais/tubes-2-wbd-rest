@@ -17,6 +17,26 @@ export const CollectionRoutes: Route[] = [
     action: "getAll",
   },
   {
+    method: "get",
+    route: "/collection/:id",
+    middleware: [
+      (req: Request, res: Response, next: NextFunction) =>
+        authMiddleware.authenticate(req, res, next),
+    ],
+    controller: CollectionController,
+    action: "get",
+  },
+  {
+    method: "get",
+    route: "/collection/:id/recipes",
+    middleware: [
+      (req: Request, res: Response, next: NextFunction) =>
+        authMiddleware.authenticate(req, res, next),
+    ],
+    controller: CollectionController,
+    action: "getRecipes",
+  },
+  {
     method: "post",
     route: "/collection",
     middleware: [
@@ -66,5 +86,4 @@ export const CollectionRoutes: Route[] = [
     controller: CollectionController,
     action: "removeRecipe",
   },
-  
 ];
