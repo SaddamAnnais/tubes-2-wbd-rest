@@ -212,7 +212,14 @@ export class AppController {
     }
 
     // Get data
-    const collection = await this.colleRepo.findOneBy({ id: collecId });
+    const collection = await this.colleRepo.findOne({
+      where: { id: collecId },
+      relations: {
+        collectionRecipe: {
+          recipe: true,
+        },
+      },
+    });
 
     if (!collection) {
       createResponse(res, StatusCodes.NOT_FOUND, "Collection not found.");
@@ -234,30 +241,12 @@ export class AppController {
       return;
     }
 
-    // Get data
-    const recipes = await this.colleRecipeRepo.find({
-      where: { collectionId: collecId },
-      relations: {
-        recipe: true,
-      },
-    });
-
-    // Check typeorm error
-    if (!recipes) {
-      createResponse(
-        res,
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        ReasonPhrases.INTERNAL_SERVER_ERROR
-      );
-      return;
-    }
-
     // Generate image path
-    for (let recipe of recipes) {
+    for (let recipe of collection.collectionRecipe) {
       recipe.recipe.image_path = `${process.env.REST_URL}/public/${recipe.recipe.image_path}`;
     }
 
-    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipes);
+    createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collection);
   }
 
   async getRecipe(req: Request, res: Response) {
