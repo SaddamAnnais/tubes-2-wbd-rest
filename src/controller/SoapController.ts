@@ -36,16 +36,18 @@ export class SoapController {
           .return;
 
       const formattedData: Subscription[] = [];
-      results.forEach((el: any) => {
-        formattedData.push({
-          creatorID: el.creatorID[0],
-          status: el.status[0],
-          subscriberEmail: el.subscriberEmail[0],
-          subscriberID: el.subscriberID[0],
+      results &&
+        results.forEach((el: any) => {
+          formattedData.push({
+            creatorID: el.creatorID[0],
+            status: el.status[0],
+            subscriberEmail: el.subscriberEmail[0],
+            subscriberID: el.subscriberID[0],
+          });
         });
-      });
       createResponse(res, StatusCodes.OK, ReasonPhrases.OK, formattedData);
     } catch (err) {
+      console.error(err);
       createResponse(
         res,
         StatusCodes.INTERNAL_SERVER_ERROR,
@@ -98,7 +100,7 @@ export class SoapController {
       let statusCode = StatusCodes.BAD_REQUEST;
       if (result === "No subscription request found") {
         statusCode = StatusCodes.NOT_FOUND;
-      } else if (result === "Successfully approved subscription request") {
+      } else if (result === "Successfully rejected subscription request") {
         statusCode = StatusCodes.OK;
       }
       createResponse(res, statusCode, result);
