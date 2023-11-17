@@ -106,10 +106,13 @@ export class AppController {
         StatusCodes.INTERNAL_SERVER_ERROR,
         ReasonPhrases.INTERNAL_SERVER_ERROR
       );
+
+      return;
     }
 
     // Generate cover
     let collecWithCover: CollecWithCover[] = [];
+
     collections.forEach((collec) => {
       collecWithCover.push({
         id: collec.id,
@@ -121,8 +124,8 @@ export class AppController {
             ? collec.collectionRecipe[0].recipe.image_path
             : "default-pro-cover.png"
         }`,
-        user_id : collec.user_id,
-        creator_name : collec.user.name,
+        user_id: collec.user_id,
+        creator_name: collec.user.name,
       });
     });
 
@@ -190,8 +193,8 @@ export class AppController {
           ? collection.collectionRecipe[0].recipe.image_path
           : "default-pro-cover.png"
       }`,
-      user_id : collection.user_id,
-      creator_name : collection.user.name,
+      user_id: collection.user_id,
+      creator_name: collection.user.name,
     };
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, collecWithCover);
