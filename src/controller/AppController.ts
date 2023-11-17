@@ -85,6 +85,7 @@ export class AppController {
         collectionRecipe: {
           recipe: true,
         },
+        user: true
       },
       cache: true,
     });
@@ -116,7 +117,7 @@ export class AppController {
         title: collec.title,
         created_at: collec.created_at,
         total_recipe: collec.total_recipe,
-        cover: `${process.env.REST_URL}/public/${
+        cover: `http://localhost:3000/public/${
           collec.collectionRecipe[0]
             ? collec.collectionRecipe[0].recipe.image_path
             : "default-pro-cover.png"
@@ -185,7 +186,7 @@ export class AppController {
       title: collection.title,
       created_at: collection.created_at,
       total_recipe: collection.total_recipe,
-      cover: `${process.env.REST_URL}/public/${
+      cover: `http://localhost:3000/public/${
         collection.collectionRecipe[0]
           ? collection.collectionRecipe[0].recipe.image_path
           : "default-pro-cover.png"
@@ -251,7 +252,7 @@ export class AppController {
 
     // Generate image path
     for (let recipe of recipes) {
-      recipe.recipe.image_path = `${process.env.REST_URL}/public/${recipe.recipe.image_path}`;
+      recipe.recipe.image_path = `http://localhost:3000/public/${recipe.recipe.image_path}`;
     }
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipes);
@@ -292,7 +293,7 @@ export class AppController {
     }
 
     // Generate image path
-    recipe.image_path = `${process.env.REST_URL}/public/${recipe.image_path}`;
+    recipe.image_path = `http://localhost:3000/public/${recipe.image_path}`;
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipe);
   }
@@ -378,7 +379,7 @@ export class AppController {
 
     // Generate image path
     for (let recipe of recipes) {
-      recipe.image_path = `${process.env.REST_URL}/public/${recipe.image_path}`;
+      recipe.image_path = `http://localhost:3000/public/${recipe.image_path}`;
     }
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipes);

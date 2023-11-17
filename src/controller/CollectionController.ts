@@ -47,7 +47,7 @@ export class CollectionController {
         title: collec.title,
         created_at: collec.created_at,
         total_recipe: collec.total_recipe,
-        cover: `${process.env.REST_URL}/public/${
+        cover: `http://localhost:3000/public/${
           collec.collectionRecipe[0]
             ? collec.collectionRecipe[0].recipe.image_path
             : "default-pro-cover.png"
@@ -98,7 +98,7 @@ export class CollectionController {
       title: collection.title,
       created_at: collection.created_at,
       total_recipe: collection.total_recipe,
-      cover: `${process.env.REST_URL}/public/${
+      cover: `http://localhost:3000/public/${
         collection.collectionRecipe[0]
           ? collection.collectionRecipe[0].recipe.image_path
           : "default-pro-cover.png"
@@ -155,7 +155,7 @@ export class CollectionController {
     }
 
     for (let recipe of recipes) {
-      recipe.recipe.image_path = `${process.env.REST_URL}/public/${recipe.recipe.image_path}`;
+      recipe.recipe.image_path = `http://localhost:3000/public/${recipe.recipe.image_path}`;
     }
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipes);

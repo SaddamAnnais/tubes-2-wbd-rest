@@ -6,7 +6,7 @@ export class SoapService {
   async getStatus(creatorId: number, subscriberId: number) {
     try {
       const response = await axios.post<string>(
-        `${SoapConfig.url}/api/subscribe`,
+        `http://host.docker.internal:8001/api/subscribe`,
         `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
           <Body>
             <getStatus xmlns="http://service.cooklyst/">

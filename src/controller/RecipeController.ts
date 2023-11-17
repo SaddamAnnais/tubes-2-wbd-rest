@@ -32,7 +32,7 @@ export class RecipeController {
     }
 
     for (let recipe of recipes) {
-      recipe.image_path = `${process.env.REST_URL}/public/${recipe.image_path}`;
+      recipe.image_path = `http://localhost:3000/public/${recipe.image_path}`;
     }
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipes);
@@ -66,7 +66,7 @@ export class RecipeController {
       return;
     }
 
-    recipe.image_path = `${process.env.REST_URL}/public/${recipe.image_path}`;
+    recipe.image_path = `http://localhost:3000/public/${recipe.image_path}`;
 
     createResponse(res, StatusCodes.OK, ReasonPhrases.OK, recipe);
   }
